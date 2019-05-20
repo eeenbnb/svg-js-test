@@ -1,0 +1,29 @@
+main{
+  padding-top: 24px;
+  .pre-line{
+    white-space: pre-line;
+  }
+  .list{
+    .card-body{
+      position: relative;
+      height: 350px;
+      svg{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translateY(-50%) translateX(-50%);
+        transform: translateY(-50%) translateX(-50%);
+        .hana{
+          transition: transform 0.5s linear;
+          transform: translateX(0%);
+        }
+        .ame{
+          transition: transform 0.5s linear;
+        }
+      }
+    }
+    .col-sm-6{
+      padding-bottom: 24px;
+    }
+  }
+}

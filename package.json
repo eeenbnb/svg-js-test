@@ -1,0 +1,30 @@
+{
+  "name": "svg-js-test",
+  "version": "1.0.0",
+  "description": "svg testing.animation to JavaScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx parcel src/index.html --open",
+    "build": "npx parcel src/index.html -d docs"
+  },
+  "keywords": [
+    "JavaScript",
+    "SVG",
+    "TypeScript",
+    "Webpack"
+  ],
+  "author": "eee_nbnb",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^1.12.3",
+    "sass": "^1.20.1",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "class": "^0.1.4",
+    "jquery": "^3.4.1",
+    "popper.js": "^1.15.0"
+  }
+}
