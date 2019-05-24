@@ -1,0 +1,24 @@
+main{
+  overflow: hidden;
+  .moko-wrapper{
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  #usagi{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translateY(-50%) translateX(-50%);
+    transform: translateY(-50%) translateX(-50%);
+    .st0{fill:#122E33;}
+    .st1{fill:#FFFFFF;}
+    .st2{fill:#F5B090;}
+    .st3{fill:#36200B;}
+    .st4{fill:#F7EC95;}
+    .st5{fill:#EE87B4;}
+    .st6{fill:#D07AA8;}
+  }
+}

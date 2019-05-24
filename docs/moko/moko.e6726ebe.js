@@ -18039,134 +18039,2697 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
     value: true
   });
 });
-},{"jquery":"../node_modules/jquery/dist/jquery.js","popper.js":"../node_modules/popper.js/dist/esm/popper.js"}],"assets/css/common.scss":[function(require,module,exports) {
+},{"jquery":"../node_modules/jquery/dist/jquery.js","popper.js":"../node_modules/popper.js/dist/esm/popper.js"}],"assets/css/moko.scss":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel/src/builtins/css-loader.js"}],"assets/svg/svg-list.ts":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel/src/builtins/css-loader.js"}],"../node_modules/hammerjs/hammer.js":[function(require,module,exports) {
+var define;
+/*! Hammer.JS - v2.0.7 - 2016-04-22
+ * http://hammerjs.github.io/
+ *
+ * Copyright (c) 2016 Jorik Tangelder;
+ * Licensed under the MIT license */
+(function (window, document, exportName, undefined) {
+  'use strict';
+
+  var VENDOR_PREFIXES = ['', 'webkit', 'Moz', 'MS', 'ms', 'o'];
+  var TEST_ELEMENT = document.createElement('div');
+  var TYPE_FUNCTION = 'function';
+  var round = Math.round;
+  var abs = Math.abs;
+  var now = Date.now;
+  /**
+   * set a timeout with a given scope
+   * @param {Function} fn
+   * @param {Number} timeout
+   * @param {Object} context
+   * @returns {number}
+   */
+
+  function setTimeoutContext(fn, timeout, context) {
+    return setTimeout(bindFn(fn, context), timeout);
+  }
+  /**
+   * if the argument is an array, we want to execute the fn on each entry
+   * if it aint an array we don't want to do a thing.
+   * this is used by all the methods that accept a single and array argument.
+   * @param {*|Array} arg
+   * @param {String} fn
+   * @param {Object} [context]
+   * @returns {Boolean}
+   */
+
+
+  function invokeArrayArg(arg, fn, context) {
+    if (Array.isArray(arg)) {
+      each(arg, context[fn], context);
+      return true;
+    }
+
+    return false;
+  }
+  /**
+   * walk objects and arrays
+   * @param {Object} obj
+   * @param {Function} iterator
+   * @param {Object} context
+   */
+
+
+  function each(obj, iterator, context) {
+    var i;
+
+    if (!obj) {
+      return;
+    }
+
+    if (obj.forEach) {
+      obj.forEach(iterator, context);
+    } else if (obj.length !== undefined) {
+      i = 0;
+
+      while (i < obj.length) {
+        iterator.call(context, obj[i], i, obj);
+        i++;
+      }
+    } else {
+      for (i in obj) {
+        obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
+      }
+    }
+  }
+  /**
+   * wrap a method with a deprecation warning and stack trace
+   * @param {Function} method
+   * @param {String} name
+   * @param {String} message
+   * @returns {Function} A new function wrapping the supplied method.
+   */
+
+
+  function deprecate(method, name, message) {
+    var deprecationMessage = 'DEPRECATED METHOD: ' + name + '\n' + message + ' AT \n';
+    return function () {
+      var e = new Error('get-stack-trace');
+      var stack = e && e.stack ? e.stack.replace(/^[^\(]+?[\n$]/gm, '').replace(/^\s+at\s+/gm, '').replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@') : 'Unknown Stack Trace';
+      var log = window.console && (window.console.warn || window.console.log);
+
+      if (log) {
+        log.call(window.console, deprecationMessage, stack);
+      }
+
+      return method.apply(this, arguments);
+    };
+  }
+  /**
+   * extend object.
+   * means that properties in dest will be overwritten by the ones in src.
+   * @param {Object} target
+   * @param {...Object} objects_to_assign
+   * @returns {Object} target
+   */
+
+
+  var assign;
+
+  if (typeof Object.assign !== 'function') {
+    assign = function assign(target) {
+      if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var output = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var source = arguments[index];
+
+        if (source !== undefined && source !== null) {
+          for (var nextKey in source) {
+            if (source.hasOwnProperty(nextKey)) {
+              output[nextKey] = source[nextKey];
+            }
+          }
+        }
+      }
+
+      return output;
+    };
+  } else {
+    assign = Object.assign;
+  }
+  /**
+   * extend object.
+   * means that properties in dest will be overwritten by the ones in src.
+   * @param {Object} dest
+   * @param {Object} src
+   * @param {Boolean} [merge=false]
+   * @returns {Object} dest
+   */
+
+
+  var extend = deprecate(function extend(dest, src, merge) {
+    var keys = Object.keys(src);
+    var i = 0;
+
+    while (i < keys.length) {
+      if (!merge || merge && dest[keys[i]] === undefined) {
+        dest[keys[i]] = src[keys[i]];
+      }
+
+      i++;
+    }
+
+    return dest;
+  }, 'extend', 'Use `assign`.');
+  /**
+   * merge the values from src in the dest.
+   * means that properties that exist in dest will not be overwritten by src
+   * @param {Object} dest
+   * @param {Object} src
+   * @returns {Object} dest
+   */
+
+  var merge = deprecate(function merge(dest, src) {
+    return extend(dest, src, true);
+  }, 'merge', 'Use `assign`.');
+  /**
+   * simple class inheritance
+   * @param {Function} child
+   * @param {Function} base
+   * @param {Object} [properties]
+   */
+
+  function inherit(child, base, properties) {
+    var baseP = base.prototype,
+        childP;
+    childP = child.prototype = Object.create(baseP);
+    childP.constructor = child;
+    childP._super = baseP;
+
+    if (properties) {
+      assign(childP, properties);
+    }
+  }
+  /**
+   * simple function bind
+   * @param {Function} fn
+   * @param {Object} context
+   * @returns {Function}
+   */
+
+
+  function bindFn(fn, context) {
+    return function boundFn() {
+      return fn.apply(context, arguments);
+    };
+  }
+  /**
+   * let a boolean value also be a function that must return a boolean
+   * this first item in args will be used as the context
+   * @param {Boolean|Function} val
+   * @param {Array} [args]
+   * @returns {Boolean}
+   */
+
+
+  function boolOrFn(val, args) {
+    if (typeof val == TYPE_FUNCTION) {
+      return val.apply(args ? args[0] || undefined : undefined, args);
+    }
+
+    return val;
+  }
+  /**
+   * use the val2 when val1 is undefined
+   * @param {*} val1
+   * @param {*} val2
+   * @returns {*}
+   */
+
+
+  function ifUndefined(val1, val2) {
+    return val1 === undefined ? val2 : val1;
+  }
+  /**
+   * addEventListener with multiple events at once
+   * @param {EventTarget} target
+   * @param {String} types
+   * @param {Function} handler
+   */
+
+
+  function addEventListeners(target, types, handler) {
+    each(splitStr(types), function (type) {
+      target.addEventListener(type, handler, false);
+    });
+  }
+  /**
+   * removeEventListener with multiple events at once
+   * @param {EventTarget} target
+   * @param {String} types
+   * @param {Function} handler
+   */
+
+
+  function removeEventListeners(target, types, handler) {
+    each(splitStr(types), function (type) {
+      target.removeEventListener(type, handler, false);
+    });
+  }
+  /**
+   * find if a node is in the given parent
+   * @method hasParent
+   * @param {HTMLElement} node
+   * @param {HTMLElement} parent
+   * @return {Boolean} found
+   */
+
+
+  function hasParent(node, parent) {
+    while (node) {
+      if (node == parent) {
+        return true;
+      }
+
+      node = node.parentNode;
+    }
+
+    return false;
+  }
+  /**
+   * small indexOf wrapper
+   * @param {String} str
+   * @param {String} find
+   * @returns {Boolean} found
+   */
+
+
+  function inStr(str, find) {
+    return str.indexOf(find) > -1;
+  }
+  /**
+   * split string on whitespace
+   * @param {String} str
+   * @returns {Array} words
+   */
+
+
+  function splitStr(str) {
+    return str.trim().split(/\s+/g);
+  }
+  /**
+   * find if a array contains the object using indexOf or a simple polyFill
+   * @param {Array} src
+   * @param {String} find
+   * @param {String} [findByKey]
+   * @return {Boolean|Number} false when not found, or the index
+   */
+
+
+  function inArray(src, find, findByKey) {
+    if (src.indexOf && !findByKey) {
+      return src.indexOf(find);
+    } else {
+      var i = 0;
+
+      while (i < src.length) {
+        if (findByKey && src[i][findByKey] == find || !findByKey && src[i] === find) {
+          return i;
+        }
+
+        i++;
+      }
+
+      return -1;
+    }
+  }
+  /**
+   * convert array-like objects to real arrays
+   * @param {Object} obj
+   * @returns {Array}
+   */
+
+
+  function toArray(obj) {
+    return Array.prototype.slice.call(obj, 0);
+  }
+  /**
+   * unique array with objects based on a key (like 'id') or just by the array's value
+   * @param {Array} src [{id:1},{id:2},{id:1}]
+   * @param {String} [key]
+   * @param {Boolean} [sort=False]
+   * @returns {Array} [{id:1},{id:2}]
+   */
+
+
+  function uniqueArray(src, key, sort) {
+    var results = [];
+    var values = [];
+    var i = 0;
+
+    while (i < src.length) {
+      var val = key ? src[i][key] : src[i];
+
+      if (inArray(values, val) < 0) {
+        results.push(src[i]);
+      }
+
+      values[i] = val;
+      i++;
+    }
+
+    if (sort) {
+      if (!key) {
+        results = results.sort();
+      } else {
+        results = results.sort(function sortUniqueArray(a, b) {
+          return a[key] > b[key];
+        });
+      }
+    }
+
+    return results;
+  }
+  /**
+   * get the prefixed property
+   * @param {Object} obj
+   * @param {String} property
+   * @returns {String|Undefined} prefixed
+   */
+
+
+  function prefixed(obj, property) {
+    var prefix, prop;
+    var camelProp = property[0].toUpperCase() + property.slice(1);
+    var i = 0;
+
+    while (i < VENDOR_PREFIXES.length) {
+      prefix = VENDOR_PREFIXES[i];
+      prop = prefix ? prefix + camelProp : property;
+
+      if (prop in obj) {
+        return prop;
+      }
+
+      i++;
+    }
+
+    return undefined;
+  }
+  /**
+   * get a unique id
+   * @returns {number} uniqueId
+   */
+
+
+  var _uniqueId = 1;
+
+  function uniqueId() {
+    return _uniqueId++;
+  }
+  /**
+   * get the window object of an element
+   * @param {HTMLElement} element
+   * @returns {DocumentView|Window}
+   */
+
+
+  function getWindowForElement(element) {
+    var doc = element.ownerDocument || element;
+    return doc.defaultView || doc.parentWindow || window;
+  }
+
+  var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
+  var SUPPORT_TOUCH = 'ontouchstart' in window;
+  var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
+  var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
+  var INPUT_TYPE_TOUCH = 'touch';
+  var INPUT_TYPE_PEN = 'pen';
+  var INPUT_TYPE_MOUSE = 'mouse';
+  var INPUT_TYPE_KINECT = 'kinect';
+  var COMPUTE_INTERVAL = 25;
+  var INPUT_START = 1;
+  var INPUT_MOVE = 2;
+  var INPUT_END = 4;
+  var INPUT_CANCEL = 8;
+  var DIRECTION_NONE = 1;
+  var DIRECTION_LEFT = 2;
+  var DIRECTION_RIGHT = 4;
+  var DIRECTION_UP = 8;
+  var DIRECTION_DOWN = 16;
+  var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
+  var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+  var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
+  var PROPS_XY = ['x', 'y'];
+  var PROPS_CLIENT_XY = ['clientX', 'clientY'];
+  /**
+   * create new input type manager
+   * @param {Manager} manager
+   * @param {Function} callback
+   * @returns {Input}
+   * @constructor
+   */
+
+  function Input(manager, callback) {
+    var self = this;
+    this.manager = manager;
+    this.callback = callback;
+    this.element = manager.element;
+    this.target = manager.options.inputTarget; // smaller wrapper around the handler, for the scope and the enabled state of the manager,
+    // so when disabled the input events are completely bypassed.
+
+    this.domHandler = function (ev) {
+      if (boolOrFn(manager.options.enable, [manager])) {
+        self.handler(ev);
+      }
+    };
+
+    this.init();
+  }
+
+  Input.prototype = {
+    /**
+     * should handle the inputEvent data and trigger the callback
+     * @virtual
+     */
+    handler: function () {},
+
+    /**
+     * bind the events
+     */
+    init: function () {
+      this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+      this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+      this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    },
+
+    /**
+     * unbind the events
+     */
+    destroy: function () {
+      this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
+      this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
+      this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    }
+  };
+  /**
+   * create new input type manager
+   * called by the Manager constructor
+   * @param {Hammer} manager
+   * @returns {Input}
+   */
+
+  function createInputInstance(manager) {
+    var Type;
+    var inputClass = manager.options.inputClass;
+
+    if (inputClass) {
+      Type = inputClass;
+    } else if (SUPPORT_POINTER_EVENTS) {
+      Type = PointerEventInput;
+    } else if (SUPPORT_ONLY_TOUCH) {
+      Type = TouchInput;
+    } else if (!SUPPORT_TOUCH) {
+      Type = MouseInput;
+    } else {
+      Type = TouchMouseInput;
+    }
+
+    return new Type(manager, inputHandler);
+  }
+  /**
+   * handle input events
+   * @param {Manager} manager
+   * @param {String} eventType
+   * @param {Object} input
+   */
+
+
+  function inputHandler(manager, eventType, input) {
+    var pointersLen = input.pointers.length;
+    var changedPointersLen = input.changedPointers.length;
+    var isFirst = eventType & INPUT_START && pointersLen - changedPointersLen === 0;
+    var isFinal = eventType & (INPUT_END | INPUT_CANCEL) && pointersLen - changedPointersLen === 0;
+    input.isFirst = !!isFirst;
+    input.isFinal = !!isFinal;
+
+    if (isFirst) {
+      manager.session = {};
+    } // source event is the normalized value of the domEvents
+    // like 'touchstart, mouseup, pointerdown'
+
+
+    input.eventType = eventType; // compute scale, rotation etc
+
+    computeInputData(manager, input); // emit secret event
+
+    manager.emit('hammer.input', input);
+    manager.recognize(input);
+    manager.session.prevInput = input;
+  }
+  /**
+   * extend the data with some usable properties like scale, rotate, velocity etc
+   * @param {Object} manager
+   * @param {Object} input
+   */
+
+
+  function computeInputData(manager, input) {
+    var session = manager.session;
+    var pointers = input.pointers;
+    var pointersLength = pointers.length; // store the first input to calculate the distance and direction
+
+    if (!session.firstInput) {
+      session.firstInput = simpleCloneInputData(input);
+    } // to compute scale and rotation we need to store the multiple touches
+
+
+    if (pointersLength > 1 && !session.firstMultiple) {
+      session.firstMultiple = simpleCloneInputData(input);
+    } else if (pointersLength === 1) {
+      session.firstMultiple = false;
+    }
+
+    var firstInput = session.firstInput;
+    var firstMultiple = session.firstMultiple;
+    var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+    var center = input.center = getCenter(pointers);
+    input.timeStamp = now();
+    input.deltaTime = input.timeStamp - firstInput.timeStamp;
+    input.angle = getAngle(offsetCenter, center);
+    input.distance = getDistance(offsetCenter, center);
+    computeDeltaXY(session, input);
+    input.offsetDirection = getDirection(input.deltaX, input.deltaY);
+    var overallVelocity = getVelocity(input.deltaTime, input.deltaX, input.deltaY);
+    input.overallVelocityX = overallVelocity.x;
+    input.overallVelocityY = overallVelocity.y;
+    input.overallVelocity = abs(overallVelocity.x) > abs(overallVelocity.y) ? overallVelocity.x : overallVelocity.y;
+    input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+    input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+    input.maxPointers = !session.prevInput ? input.pointers.length : input.pointers.length > session.prevInput.maxPointers ? input.pointers.length : session.prevInput.maxPointers;
+    computeIntervalInputData(session, input); // find the correct target
+
+    var target = manager.element;
+
+    if (hasParent(input.srcEvent.target, target)) {
+      target = input.srcEvent.target;
+    }
+
+    input.target = target;
+  }
+
+  function computeDeltaXY(session, input) {
+    var center = input.center;
+    var offset = session.offsetDelta || {};
+    var prevDelta = session.prevDelta || {};
+    var prevInput = session.prevInput || {};
+
+    if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
+      prevDelta = session.prevDelta = {
+        x: prevInput.deltaX || 0,
+        y: prevInput.deltaY || 0
+      };
+      offset = session.offsetDelta = {
+        x: center.x,
+        y: center.y
+      };
+    }
+
+    input.deltaX = prevDelta.x + (center.x - offset.x);
+    input.deltaY = prevDelta.y + (center.y - offset.y);
+  }
+  /**
+   * velocity is calculated every x ms
+   * @param {Object} session
+   * @param {Object} input
+   */
+
+
+  function computeIntervalInputData(session, input) {
+    var last = session.lastInterval || input,
+        deltaTime = input.timeStamp - last.timeStamp,
+        velocity,
+        velocityX,
+        velocityY,
+        direction;
+
+    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
+      var deltaX = input.deltaX - last.deltaX;
+      var deltaY = input.deltaY - last.deltaY;
+      var v = getVelocity(deltaTime, deltaX, deltaY);
+      velocityX = v.x;
+      velocityY = v.y;
+      velocity = abs(v.x) > abs(v.y) ? v.x : v.y;
+      direction = getDirection(deltaX, deltaY);
+      session.lastInterval = input;
+    } else {
+      // use latest velocity info if it doesn't overtake a minimum period
+      velocity = last.velocity;
+      velocityX = last.velocityX;
+      velocityY = last.velocityY;
+      direction = last.direction;
+    }
+
+    input.velocity = velocity;
+    input.velocityX = velocityX;
+    input.velocityY = velocityY;
+    input.direction = direction;
+  }
+  /**
+   * create a simple clone from the input used for storage of firstInput and firstMultiple
+   * @param {Object} input
+   * @returns {Object} clonedInputData
+   */
+
+
+  function simpleCloneInputData(input) {
+    // make a simple copy of the pointers because we will get a reference if we don't
+    // we only need clientXY for the calculations
+    var pointers = [];
+    var i = 0;
+
+    while (i < input.pointers.length) {
+      pointers[i] = {
+        clientX: round(input.pointers[i].clientX),
+        clientY: round(input.pointers[i].clientY)
+      };
+      i++;
+    }
+
+    return {
+      timeStamp: now(),
+      pointers: pointers,
+      center: getCenter(pointers),
+      deltaX: input.deltaX,
+      deltaY: input.deltaY
+    };
+  }
+  /**
+   * get the center of all the pointers
+   * @param {Array} pointers
+   * @return {Object} center contains `x` and `y` properties
+   */
+
+
+  function getCenter(pointers) {
+    var pointersLength = pointers.length; // no need to loop when only one touch
+
+    if (pointersLength === 1) {
+      return {
+        x: round(pointers[0].clientX),
+        y: round(pointers[0].clientY)
+      };
+    }
+
+    var x = 0,
+        y = 0,
+        i = 0;
+
+    while (i < pointersLength) {
+      x += pointers[i].clientX;
+      y += pointers[i].clientY;
+      i++;
+    }
+
+    return {
+      x: round(x / pointersLength),
+      y: round(y / pointersLength)
+    };
+  }
+  /**
+   * calculate the velocity between two points. unit is in px per ms.
+   * @param {Number} deltaTime
+   * @param {Number} x
+   * @param {Number} y
+   * @return {Object} velocity `x` and `y`
+   */
+
+
+  function getVelocity(deltaTime, x, y) {
+    return {
+      x: x / deltaTime || 0,
+      y: y / deltaTime || 0
+    };
+  }
+  /**
+   * get the direction between two points
+   * @param {Number} x
+   * @param {Number} y
+   * @return {Number} direction
+   */
+
+
+  function getDirection(x, y) {
+    if (x === y) {
+      return DIRECTION_NONE;
+    }
+
+    if (abs(x) >= abs(y)) {
+      return x < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+    }
+
+    return y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
+  }
+  /**
+   * calculate the absolute distance between two points
+   * @param {Object} p1 {x, y}
+   * @param {Object} p2 {x, y}
+   * @param {Array} [props] containing x and y keys
+   * @return {Number} distance
+   */
+
+
+  function getDistance(p1, p2, props) {
+    if (!props) {
+      props = PROPS_XY;
+    }
+
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+    return Math.sqrt(x * x + y * y);
+  }
+  /**
+   * calculate the angle between two coordinates
+   * @param {Object} p1
+   * @param {Object} p2
+   * @param {Array} [props] containing x and y keys
+   * @return {Number} angle
+   */
+
+
+  function getAngle(p1, p2, props) {
+    if (!props) {
+      props = PROPS_XY;
+    }
+
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+    return Math.atan2(y, x) * 180 / Math.PI;
+  }
+  /**
+   * calculate the rotation degrees between two pointersets
+   * @param {Array} start array of pointers
+   * @param {Array} end array of pointers
+   * @return {Number} rotation
+   */
+
+
+  function getRotation(start, end) {
+    return getAngle(end[1], end[0], PROPS_CLIENT_XY) + getAngle(start[1], start[0], PROPS_CLIENT_XY);
+  }
+  /**
+   * calculate the scale factor between two pointersets
+   * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
+   * @param {Array} start array of pointers
+   * @param {Array} end array of pointers
+   * @return {Number} scale
+   */
+
+
+  function getScale(start, end) {
+    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
+  }
+
+  var MOUSE_INPUT_MAP = {
+    mousedown: INPUT_START,
+    mousemove: INPUT_MOVE,
+    mouseup: INPUT_END
+  };
+  var MOUSE_ELEMENT_EVENTS = 'mousedown';
+  var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
+  /**
+   * Mouse events input
+   * @constructor
+   * @extends Input
+   */
+
+  function MouseInput() {
+    this.evEl = MOUSE_ELEMENT_EVENTS;
+    this.evWin = MOUSE_WINDOW_EVENTS;
+    this.pressed = false; // mousedown state
+
+    Input.apply(this, arguments);
+  }
+
+  inherit(MouseInput, Input, {
+    /**
+     * handle mouse events
+     * @param {Object} ev
+     */
+    handler: function MEhandler(ev) {
+      var eventType = MOUSE_INPUT_MAP[ev.type]; // on start we want to have the left mouse button down
+
+      if (eventType & INPUT_START && ev.button === 0) {
+        this.pressed = true;
+      }
+
+      if (eventType & INPUT_MOVE && ev.which !== 1) {
+        eventType = INPUT_END;
+      } // mouse must be down
+
+
+      if (!this.pressed) {
+        return;
+      }
+
+      if (eventType & INPUT_END) {
+        this.pressed = false;
+      }
+
+      this.callback(this.manager, eventType, {
+        pointers: [ev],
+        changedPointers: [ev],
+        pointerType: INPUT_TYPE_MOUSE,
+        srcEvent: ev
+      });
+    }
+  });
+  var POINTER_INPUT_MAP = {
+    pointerdown: INPUT_START,
+    pointermove: INPUT_MOVE,
+    pointerup: INPUT_END,
+    pointercancel: INPUT_CANCEL,
+    pointerout: INPUT_CANCEL
+  }; // in IE10 the pointer types is defined as an enum
+
+  var IE10_POINTER_TYPE_ENUM = {
+    2: INPUT_TYPE_TOUCH,
+    3: INPUT_TYPE_PEN,
+    4: INPUT_TYPE_MOUSE,
+    5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
+
+  };
+  var POINTER_ELEMENT_EVENTS = 'pointerdown';
+  var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel'; // IE10 has prefixed support, and case-sensitive
+
+  if (window.MSPointerEvent && !window.PointerEvent) {
+    POINTER_ELEMENT_EVENTS = 'MSPointerDown';
+    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
+  }
+  /**
+   * Pointer events input
+   * @constructor
+   * @extends Input
+   */
+
+
+  function PointerEventInput() {
+    this.evEl = POINTER_ELEMENT_EVENTS;
+    this.evWin = POINTER_WINDOW_EVENTS;
+    Input.apply(this, arguments);
+    this.store = this.manager.session.pointerEvents = [];
+  }
+
+  inherit(PointerEventInput, Input, {
+    /**
+     * handle mouse events
+     * @param {Object} ev
+     */
+    handler: function PEhandler(ev) {
+      var store = this.store;
+      var removePointer = false;
+      var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
+      var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+      var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
+      var isTouch = pointerType == INPUT_TYPE_TOUCH; // get index of the event in the store
+
+      var storeIndex = inArray(store, ev.pointerId, 'pointerId'); // start and mouse must be down
+
+      if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
+        if (storeIndex < 0) {
+          store.push(ev);
+          storeIndex = store.length - 1;
+        }
+      } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+        removePointer = true;
+      } // it not found, so the pointer hasn't been down (so it's probably a hover)
+
+
+      if (storeIndex < 0) {
+        return;
+      } // update the event in the store
+
+
+      store[storeIndex] = ev;
+      this.callback(this.manager, eventType, {
+        pointers: store,
+        changedPointers: [ev],
+        pointerType: pointerType,
+        srcEvent: ev
+      });
+
+      if (removePointer) {
+        // remove from the store
+        store.splice(storeIndex, 1);
+      }
+    }
+  });
+  var SINGLE_TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+  };
+  var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
+  var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
+  /**
+   * Touch events input
+   * @constructor
+   * @extends Input
+   */
+
+  function SingleTouchInput() {
+    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
+    this.started = false;
+    Input.apply(this, arguments);
+  }
+
+  inherit(SingleTouchInput, Input, {
+    handler: function TEhandler(ev) {
+      var type = SINGLE_TOUCH_INPUT_MAP[ev.type]; // should we handle the touch events?
+
+      if (type === INPUT_START) {
+        this.started = true;
+      }
+
+      if (!this.started) {
+        return;
+      }
+
+      var touches = normalizeSingleTouches.call(this, ev, type); // when done, reset the started state
+
+      if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+        this.started = false;
+      }
+
+      this.callback(this.manager, type, {
+        pointers: touches[0],
+        changedPointers: touches[1],
+        pointerType: INPUT_TYPE_TOUCH,
+        srcEvent: ev
+      });
+    }
+  });
+  /**
+   * @this {TouchInput}
+   * @param {Object} ev
+   * @param {Number} type flag
+   * @returns {undefined|Array} [all, changed]
+   */
+
+  function normalizeSingleTouches(ev, type) {
+    var all = toArray(ev.touches);
+    var changed = toArray(ev.changedTouches);
+
+    if (type & (INPUT_END | INPUT_CANCEL)) {
+      all = uniqueArray(all.concat(changed), 'identifier', true);
+    }
+
+    return [all, changed];
+  }
+
+  var TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+  };
+  var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
+  /**
+   * Multi-user touch events input
+   * @constructor
+   * @extends Input
+   */
+
+  function TouchInput() {
+    this.evTarget = TOUCH_TARGET_EVENTS;
+    this.targetIds = {};
+    Input.apply(this, arguments);
+  }
+
+  inherit(TouchInput, Input, {
+    handler: function MTEhandler(ev) {
+      var type = TOUCH_INPUT_MAP[ev.type];
+      var touches = getTouches.call(this, ev, type);
+
+      if (!touches) {
+        return;
+      }
+
+      this.callback(this.manager, type, {
+        pointers: touches[0],
+        changedPointers: touches[1],
+        pointerType: INPUT_TYPE_TOUCH,
+        srcEvent: ev
+      });
+    }
+  });
+  /**
+   * @this {TouchInput}
+   * @param {Object} ev
+   * @param {Number} type flag
+   * @returns {undefined|Array} [all, changed]
+   */
+
+  function getTouches(ev, type) {
+    var allTouches = toArray(ev.touches);
+    var targetIds = this.targetIds; // when there is only one touch, the process can be simplified
+
+    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+      targetIds[allTouches[0].identifier] = true;
+      return [allTouches, allTouches];
+    }
+
+    var i,
+        targetTouches,
+        changedTouches = toArray(ev.changedTouches),
+        changedTargetTouches = [],
+        target = this.target; // get target touches from touches
+
+    targetTouches = allTouches.filter(function (touch) {
+      return hasParent(touch.target, target);
+    }); // collect touches
+
+    if (type === INPUT_START) {
+      i = 0;
+
+      while (i < targetTouches.length) {
+        targetIds[targetTouches[i].identifier] = true;
+        i++;
+      }
+    } // filter changed touches to only contain touches that exist in the collected target ids
+
+
+    i = 0;
+
+    while (i < changedTouches.length) {
+      if (targetIds[changedTouches[i].identifier]) {
+        changedTargetTouches.push(changedTouches[i]);
+      } // cleanup removed touches
+
+
+      if (type & (INPUT_END | INPUT_CANCEL)) {
+        delete targetIds[changedTouches[i].identifier];
+      }
+
+      i++;
+    }
+
+    if (!changedTargetTouches.length) {
+      return;
+    }
+
+    return [// merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+    uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true), changedTargetTouches];
+  }
+  /**
+   * Combined touch and mouse input
+   *
+   * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
+   * This because touch devices also emit mouse events while doing a touch.
+   *
+   * @constructor
+   * @extends Input
+   */
+
+
+  var DEDUP_TIMEOUT = 2500;
+  var DEDUP_DISTANCE = 25;
+
+  function TouchMouseInput() {
+    Input.apply(this, arguments);
+    var handler = bindFn(this.handler, this);
+    this.touch = new TouchInput(this.manager, handler);
+    this.mouse = new MouseInput(this.manager, handler);
+    this.primaryTouch = null;
+    this.lastTouches = [];
+  }
+
+  inherit(TouchMouseInput, Input, {
+    /**
+     * handle mouse and touch events
+     * @param {Hammer} manager
+     * @param {String} inputEvent
+     * @param {Object} inputData
+     */
+    handler: function TMEhandler(manager, inputEvent, inputData) {
+      var isTouch = inputData.pointerType == INPUT_TYPE_TOUCH,
+          isMouse = inputData.pointerType == INPUT_TYPE_MOUSE;
+
+      if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
+        return;
+      } // when we're in a touch event, record touches to  de-dupe synthetic mouse event
+
+
+      if (isTouch) {
+        recordTouches.call(this, inputEvent, inputData);
+      } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
+        return;
+      }
+
+      this.callback(manager, inputEvent, inputData);
+    },
+
+    /**
+     * remove the event listeners
+     */
+    destroy: function destroy() {
+      this.touch.destroy();
+      this.mouse.destroy();
+    }
+  });
+
+  function recordTouches(eventType, eventData) {
+    if (eventType & INPUT_START) {
+      this.primaryTouch = eventData.changedPointers[0].identifier;
+      setLastTouch.call(this, eventData);
+    } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+      setLastTouch.call(this, eventData);
+    }
+  }
+
+  function setLastTouch(eventData) {
+    var touch = eventData.changedPointers[0];
+
+    if (touch.identifier === this.primaryTouch) {
+      var lastTouch = {
+        x: touch.clientX,
+        y: touch.clientY
+      };
+      this.lastTouches.push(lastTouch);
+      var lts = this.lastTouches;
+
+      var removeLastTouch = function () {
+        var i = lts.indexOf(lastTouch);
+
+        if (i > -1) {
+          lts.splice(i, 1);
+        }
+      };
+
+      setTimeout(removeLastTouch, DEDUP_TIMEOUT);
+    }
+  }
+
+  function isSyntheticEvent(eventData) {
+    var x = eventData.srcEvent.clientX,
+        y = eventData.srcEvent.clientY;
+
+    for (var i = 0; i < this.lastTouches.length; i++) {
+      var t = this.lastTouches[i];
+      var dx = Math.abs(x - t.x),
+          dy = Math.abs(y - t.y);
+
+      if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
+  var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined; // magical touchAction value
+
+  var TOUCH_ACTION_COMPUTE = 'compute';
+  var TOUCH_ACTION_AUTO = 'auto';
+  var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
+
+  var TOUCH_ACTION_NONE = 'none';
+  var TOUCH_ACTION_PAN_X = 'pan-x';
+  var TOUCH_ACTION_PAN_Y = 'pan-y';
+  var TOUCH_ACTION_MAP = getTouchActionProps();
+  /**
+   * Touch Action
+   * sets the touchAction property or uses the js alternative
+   * @param {Manager} manager
+   * @param {String} value
+   * @constructor
+   */
+
+  function TouchAction(manager, value) {
+    this.manager = manager;
+    this.set(value);
+  }
+
+  TouchAction.prototype = {
+    /**
+     * set the touchAction value on the element or enable the polyfill
+     * @param {String} value
+     */
+    set: function (value) {
+      // find out the touch-action by the event handlers
+      if (value == TOUCH_ACTION_COMPUTE) {
+        value = this.compute();
+      }
+
+      if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
+        this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+      }
+
+      this.actions = value.toLowerCase().trim();
+    },
+
+    /**
+     * just re-set the touchAction value
+     */
+    update: function () {
+      this.set(this.manager.options.touchAction);
+    },
+
+    /**
+     * compute the value for the touchAction property based on the recognizer's settings
+     * @returns {String} value
+     */
+    compute: function () {
+      var actions = [];
+      each(this.manager.recognizers, function (recognizer) {
+        if (boolOrFn(recognizer.options.enable, [recognizer])) {
+          actions = actions.concat(recognizer.getTouchAction());
+        }
+      });
+      return cleanTouchActions(actions.join(' '));
+    },
+
+    /**
+     * this method is called on each input cycle and provides the preventing of the browser behavior
+     * @param {Object} input
+     */
+    preventDefaults: function (input) {
+      var srcEvent = input.srcEvent;
+      var direction = input.offsetDirection; // if the touch action did prevented once this session
+
+      if (this.manager.session.prevented) {
+        srcEvent.preventDefault();
+        return;
+      }
+
+      var actions = this.actions;
+      var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
+      var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
+      var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
+
+      if (hasNone) {
+        //do not prevent defaults if this is a tap gesture
+        var isTapPointer = input.pointers.length === 1;
+        var isTapMovement = input.distance < 2;
+        var isTapTouchTime = input.deltaTime < 250;
+
+        if (isTapPointer && isTapMovement && isTapTouchTime) {
+          return;
+        }
+      }
+
+      if (hasPanX && hasPanY) {
+        // `pan-x pan-y` means browser handles all scrolling/panning, do not prevent
+        return;
+      }
+
+      if (hasNone || hasPanY && direction & DIRECTION_HORIZONTAL || hasPanX && direction & DIRECTION_VERTICAL) {
+        return this.preventSrc(srcEvent);
+      }
+    },
+
+    /**
+     * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
+     * @param {Object} srcEvent
+     */
+    preventSrc: function (srcEvent) {
+      this.manager.session.prevented = true;
+      srcEvent.preventDefault();
+    }
+  };
+  /**
+   * when the touchActions are collected they are not a valid value, so we need to clean things up. *
+   * @param {String} actions
+   * @returns {*}
+   */
+
+  function cleanTouchActions(actions) {
+    // none
+    if (inStr(actions, TOUCH_ACTION_NONE)) {
+      return TOUCH_ACTION_NONE;
+    }
+
+    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y); // if both pan-x and pan-y are set (different recognizers
+    // for different directions, e.g. horizontal pan but vertical swipe?)
+    // we need none (as otherwise with pan-x pan-y combined none of these
+    // recognizers will work, since the browser would handle all panning
+
+    if (hasPanX && hasPanY) {
+      return TOUCH_ACTION_NONE;
+    } // pan-x OR pan-y
+
+
+    if (hasPanX || hasPanY) {
+      return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+    } // manipulation
+
+
+    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+      return TOUCH_ACTION_MANIPULATION;
+    }
+
+    return TOUCH_ACTION_AUTO;
+  }
+
+  function getTouchActionProps() {
+    if (!NATIVE_TOUCH_ACTION) {
+      return false;
+    }
+
+    var touchMap = {};
+    var cssSupports = window.CSS && window.CSS.supports;
+    ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function (val) {
+      // If css.supports is not supported but there is native touch-action assume it supports
+      // all values. This is the case for IE 10 and 11.
+      touchMap[val] = cssSupports ? window.CSS.supports('touch-action', val) : true;
+    });
+    return touchMap;
+  }
+  /**
+   * Recognizer flow explained; *
+   * All recognizers have the initial state of POSSIBLE when a input session starts.
+   * The definition of a input session is from the first input until the last input, with all it's movement in it. *
+   * Example session for mouse-input: mousedown -> mousemove -> mouseup
+   *
+   * On each recognizing cycle (see Manager.recognize) the .recognize() method is executed
+   * which determines with state it should be.
+   *
+   * If the recognizer has the state FAILED, CANCELLED or RECOGNIZED (equals ENDED), it is reset to
+   * POSSIBLE to give it another change on the next cycle.
+   *
+   *               Possible
+   *                  |
+   *            +-----+---------------+
+   *            |                     |
+   *      +-----+-----+               |
+   *      |           |               |
+   *   Failed      Cancelled          |
+   *                          +-------+------+
+   *                          |              |
+   *                      Recognized       Began
+   *                                         |
+   *                                      Changed
+   *                                         |
+   *                                  Ended/Recognized
+   */
+
+
+  var STATE_POSSIBLE = 1;
+  var STATE_BEGAN = 2;
+  var STATE_CHANGED = 4;
+  var STATE_ENDED = 8;
+  var STATE_RECOGNIZED = STATE_ENDED;
+  var STATE_CANCELLED = 16;
+  var STATE_FAILED = 32;
+  /**
+   * Recognizer
+   * Every recognizer needs to extend from this class.
+   * @constructor
+   * @param {Object} options
+   */
+
+  function Recognizer(options) {
+    this.options = assign({}, this.defaults, options || {});
+    this.id = uniqueId();
+    this.manager = null; // default is enable true
+
+    this.options.enable = ifUndefined(this.options.enable, true);
+    this.state = STATE_POSSIBLE;
+    this.simultaneous = {};
+    this.requireFail = [];
+  }
+
+  Recognizer.prototype = {
+    /**
+     * @virtual
+     * @type {Object}
+     */
+    defaults: {},
+
+    /**
+     * set options
+     * @param {Object} options
+     * @return {Recognizer}
+     */
+    set: function (options) {
+      assign(this.options, options); // also update the touchAction, in case something changed about the directions/enabled state
+
+      this.manager && this.manager.touchAction.update();
+      return this;
+    },
+
+    /**
+     * recognize simultaneous with an other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    recognizeWith: function (otherRecognizer) {
+      if (invokeArrayArg(otherRecognizer, 'recognizeWith', this)) {
+        return this;
+      }
+
+      var simultaneous = this.simultaneous;
+      otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+
+      if (!simultaneous[otherRecognizer.id]) {
+        simultaneous[otherRecognizer.id] = otherRecognizer;
+        otherRecognizer.recognizeWith(this);
+      }
+
+      return this;
+    },
+
+    /**
+     * drop the simultaneous link. it doesnt remove the link on the other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRecognizeWith: function (otherRecognizer) {
+      if (invokeArrayArg(otherRecognizer, 'dropRecognizeWith', this)) {
+        return this;
+      }
+
+      otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+      delete this.simultaneous[otherRecognizer.id];
+      return this;
+    },
+
+    /**
+     * recognizer can only run when an other is failing
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    requireFailure: function (otherRecognizer) {
+      if (invokeArrayArg(otherRecognizer, 'requireFailure', this)) {
+        return this;
+      }
+
+      var requireFail = this.requireFail;
+      otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+
+      if (inArray(requireFail, otherRecognizer) === -1) {
+        requireFail.push(otherRecognizer);
+        otherRecognizer.requireFailure(this);
+      }
+
+      return this;
+    },
+
+    /**
+     * drop the requireFailure link. it does not remove the link on the other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRequireFailure: function (otherRecognizer) {
+      if (invokeArrayArg(otherRecognizer, 'dropRequireFailure', this)) {
+        return this;
+      }
+
+      otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+      var index = inArray(this.requireFail, otherRecognizer);
+
+      if (index > -1) {
+        this.requireFail.splice(index, 1);
+      }
+
+      return this;
+    },
+
+    /**
+     * has require failures boolean
+     * @returns {boolean}
+     */
+    hasRequireFailures: function () {
+      return this.requireFail.length > 0;
+    },
+
+    /**
+     * if the recognizer can recognize simultaneous with an other recognizer
+     * @param {Recognizer} otherRecognizer
+     * @returns {Boolean}
+     */
+    canRecognizeWith: function (otherRecognizer) {
+      return !!this.simultaneous[otherRecognizer.id];
+    },
+
+    /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
+     * @param {Object} input
+     */
+    emit: function (input) {
+      var self = this;
+      var state = this.state;
+
+      function emit(event) {
+        self.manager.emit(event, input);
+      } // 'panstart' and 'panmove'
+
+
+      if (state < STATE_ENDED) {
+        emit(self.options.event + stateStr(state));
+      }
+
+      emit(self.options.event); // simple 'eventName' events
+
+      if (input.additionalEvent) {
+        // additional event(panleft, panright, pinchin, pinchout...)
+        emit(input.additionalEvent);
+      } // panend and pancancel
+
+
+      if (state >= STATE_ENDED) {
+        emit(self.options.event + stateStr(state));
+      }
+    },
+
+    /**
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function (input) {
+      if (this.canEmit()) {
+        return this.emit(input);
+      } // it's failing anyway
+
+
+      this.state = STATE_FAILED;
+    },
+
+    /**
+     * can we emit?
+     * @returns {boolean}
+     */
+    canEmit: function () {
+      var i = 0;
+
+      while (i < this.requireFail.length) {
+        if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
+          return false;
+        }
+
+        i++;
+      }
+
+      return true;
+    },
+
+    /**
+     * update the recognizer
+     * @param {Object} inputData
+     */
+    recognize: function (inputData) {
+      // make a new copy of the inputData
+      // so we can change the inputData without messing up the other recognizers
+      var inputDataClone = assign({}, inputData); // is is enabled and allow recognizing?
+
+      if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
+        this.reset();
+        this.state = STATE_FAILED;
+        return;
+      } // reset when we've reached the end
+
+
+      if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+        this.state = STATE_POSSIBLE;
+      }
+
+      this.state = this.process(inputDataClone); // the recognizer has recognized a gesture
+      // so trigger an event
+
+      if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
+        this.tryEmit(inputDataClone);
+      }
+    },
+
+    /**
+     * return the state of the recognizer
+     * the actual recognizing happens in this method
+     * @virtual
+     * @param {Object} inputData
+     * @returns {Const} STATE
+     */
+    process: function (inputData) {},
+    // jshint ignore:line
+
+    /**
+     * return the preferred touch-action
+     * @virtual
+     * @returns {Array}
+     */
+    getTouchAction: function () {},
+
+    /**
+     * called when the gesture isn't allowed to recognize
+     * like when another is being recognized or it is disabled
+     * @virtual
+     */
+    reset: function () {}
+  };
+  /**
+   * get a usable string, used as event postfix
+   * @param {Const} state
+   * @returns {String} state
+   */
+
+  function stateStr(state) {
+    if (state & STATE_CANCELLED) {
+      return 'cancel';
+    } else if (state & STATE_ENDED) {
+      return 'end';
+    } else if (state & STATE_CHANGED) {
+      return 'move';
+    } else if (state & STATE_BEGAN) {
+      return 'start';
+    }
+
+    return '';
+  }
+  /**
+   * direction cons to string
+   * @param {Const} direction
+   * @returns {String}
+   */
+
+
+  function directionStr(direction) {
+    if (direction == DIRECTION_DOWN) {
+      return 'down';
+    } else if (direction == DIRECTION_UP) {
+      return 'up';
+    } else if (direction == DIRECTION_LEFT) {
+      return 'left';
+    } else if (direction == DIRECTION_RIGHT) {
+      return 'right';
+    }
+
+    return '';
+  }
+  /**
+   * get a recognizer by name if it is bound to a manager
+   * @param {Recognizer|String} otherRecognizer
+   * @param {Recognizer} recognizer
+   * @returns {Recognizer}
+   */
+
+
+  function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
+    var manager = recognizer.manager;
+
+    if (manager) {
+      return manager.get(otherRecognizer);
+    }
+
+    return otherRecognizer;
+  }
+  /**
+   * This recognizer is just used as a base for the simple attribute recognizers.
+   * @constructor
+   * @extends Recognizer
+   */
+
+
+  function AttrRecognizer() {
+    Recognizer.apply(this, arguments);
+  }
+
+  inherit(AttrRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof AttrRecognizer
+     */
+    defaults: {
+      /**
+       * @type {Number}
+       * @default 1
+       */
+      pointers: 1
+    },
+
+    /**
+     * Used to check if it the recognizer receives valid input, like input.distance > 10.
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {Boolean} recognized
+     */
+    attrTest: function (input) {
+      var optionPointers = this.options.pointers;
+      return optionPointers === 0 || input.pointers.length === optionPointers;
+    },
+
+    /**
+     * Process the input and return the state for the recognizer
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {*} State
+     */
+    process: function (input) {
+      var state = this.state;
+      var eventType = input.eventType;
+      var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
+      var isValid = this.attrTest(input); // on cancel input and we've recognized before, return STATE_CANCELLED
+
+      if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
+        return state | STATE_CANCELLED;
+      } else if (isRecognized || isValid) {
+        if (eventType & INPUT_END) {
+          return state | STATE_ENDED;
+        } else if (!(state & STATE_BEGAN)) {
+          return STATE_BEGAN;
+        }
+
+        return state | STATE_CHANGED;
+      }
+
+      return STATE_FAILED;
+    }
+  });
+  /**
+   * Pan
+   * Recognized when the pointer is down and moved in the allowed direction.
+   * @constructor
+   * @extends AttrRecognizer
+   */
+
+  function PanRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+    this.pX = null;
+    this.pY = null;
+  }
+
+  inherit(PanRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PanRecognizer
+     */
+    defaults: {
+      event: 'pan',
+      threshold: 10,
+      pointers: 1,
+      direction: DIRECTION_ALL
+    },
+    getTouchAction: function () {
+      var direction = this.options.direction;
+      var actions = [];
+
+      if (direction & DIRECTION_HORIZONTAL) {
+        actions.push(TOUCH_ACTION_PAN_Y);
+      }
+
+      if (direction & DIRECTION_VERTICAL) {
+        actions.push(TOUCH_ACTION_PAN_X);
+      }
+
+      return actions;
+    },
+    directionTest: function (input) {
+      var options = this.options;
+      var hasMoved = true;
+      var distance = input.distance;
+      var direction = input.direction;
+      var x = input.deltaX;
+      var y = input.deltaY; // lock to axis?
+
+      if (!(direction & options.direction)) {
+        if (options.direction & DIRECTION_HORIZONTAL) {
+          direction = x === 0 ? DIRECTION_NONE : x < 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+          hasMoved = x != this.pX;
+          distance = Math.abs(input.deltaX);
+        } else {
+          direction = y === 0 ? DIRECTION_NONE : y < 0 ? DIRECTION_UP : DIRECTION_DOWN;
+          hasMoved = y != this.pY;
+          distance = Math.abs(input.deltaY);
+        }
+      }
+
+      input.direction = direction;
+      return hasMoved && distance > options.threshold && direction & options.direction;
+    },
+    attrTest: function (input) {
+      return AttrRecognizer.prototype.attrTest.call(this, input) && (this.state & STATE_BEGAN || !(this.state & STATE_BEGAN) && this.directionTest(input));
+    },
+    emit: function (input) {
+      this.pX = input.deltaX;
+      this.pY = input.deltaY;
+      var direction = directionStr(input.direction);
+
+      if (direction) {
+        input.additionalEvent = this.options.event + direction;
+      }
+
+      this._super.emit.call(this, input);
+    }
+  });
+  /**
+   * Pinch
+   * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
+   * @constructor
+   * @extends AttrRecognizer
+   */
+
+  function PinchRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+  }
+
+  inherit(PinchRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
+    defaults: {
+      event: 'pinch',
+      threshold: 0,
+      pointers: 2
+    },
+    getTouchAction: function () {
+      return [TOUCH_ACTION_NONE];
+    },
+    attrTest: function (input) {
+      return this._super.attrTest.call(this, input) && (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
+    },
+    emit: function (input) {
+      if (input.scale !== 1) {
+        var inOut = input.scale < 1 ? 'in' : 'out';
+        input.additionalEvent = this.options.event + inOut;
+      }
+
+      this._super.emit.call(this, input);
+    }
+  });
+  /**
+   * Press
+   * Recognized when the pointer is down for x ms without any movement.
+   * @constructor
+   * @extends Recognizer
+   */
+
+  function PressRecognizer() {
+    Recognizer.apply(this, arguments);
+    this._timer = null;
+    this._input = null;
+  }
+
+  inherit(PressRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PressRecognizer
+     */
+    defaults: {
+      event: 'press',
+      pointers: 1,
+      time: 251,
+      // minimal time of the pointer to be pressed
+      threshold: 9 // a minimal movement is ok, but keep it low
+
+    },
+    getTouchAction: function () {
+      return [TOUCH_ACTION_AUTO];
+    },
+    process: function (input) {
+      var options = this.options;
+      var validPointers = input.pointers.length === options.pointers;
+      var validMovement = input.distance < options.threshold;
+      var validTime = input.deltaTime > options.time;
+      this._input = input; // we only allow little movement
+      // and we've reached an end event, so a tap is possible
+
+      if (!validMovement || !validPointers || input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime) {
+        this.reset();
+      } else if (input.eventType & INPUT_START) {
+        this.reset();
+        this._timer = setTimeoutContext(function () {
+          this.state = STATE_RECOGNIZED;
+          this.tryEmit();
+        }, options.time, this);
+      } else if (input.eventType & INPUT_END) {
+        return STATE_RECOGNIZED;
+      }
+
+      return STATE_FAILED;
+    },
+    reset: function () {
+      clearTimeout(this._timer);
+    },
+    emit: function (input) {
+      if (this.state !== STATE_RECOGNIZED) {
+        return;
+      }
+
+      if (input && input.eventType & INPUT_END) {
+        this.manager.emit(this.options.event + 'up', input);
+      } else {
+        this._input.timeStamp = now();
+        this.manager.emit(this.options.event, this._input);
+      }
+    }
+  });
+  /**
+   * Rotate
+   * Recognized when two or more pointer are moving in a circular motion.
+   * @constructor
+   * @extends AttrRecognizer
+   */
+
+  function RotateRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+  }
+
+  inherit(RotateRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof RotateRecognizer
+     */
+    defaults: {
+      event: 'rotate',
+      threshold: 0,
+      pointers: 2
+    },
+    getTouchAction: function () {
+      return [TOUCH_ACTION_NONE];
+    },
+    attrTest: function (input) {
+      return this._super.attrTest.call(this, input) && (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+    }
+  });
+  /**
+   * Swipe
+   * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
+   * @constructor
+   * @extends AttrRecognizer
+   */
+
+  function SwipeRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+  }
+
+  inherit(SwipeRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof SwipeRecognizer
+     */
+    defaults: {
+      event: 'swipe',
+      threshold: 10,
+      velocity: 0.3,
+      direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
+      pointers: 1
+    },
+    getTouchAction: function () {
+      return PanRecognizer.prototype.getTouchAction.call(this);
+    },
+    attrTest: function (input) {
+      var direction = this.options.direction;
+      var velocity;
+
+      if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
+        velocity = input.overallVelocity;
+      } else if (direction & DIRECTION_HORIZONTAL) {
+        velocity = input.overallVelocityX;
+      } else if (direction & DIRECTION_VERTICAL) {
+        velocity = input.overallVelocityY;
+      }
+
+      return this._super.attrTest.call(this, input) && direction & input.offsetDirection && input.distance > this.options.threshold && input.maxPointers == this.options.pointers && abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
+    },
+    emit: function (input) {
+      var direction = directionStr(input.offsetDirection);
+
+      if (direction) {
+        this.manager.emit(this.options.event + direction, input);
+      }
+
+      this.manager.emit(this.options.event, input);
+    }
+  });
+  /**
+   * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
+   * between the given interval and position. The delay option can be used to recognize multi-taps without firing
+   * a single tap.
+   *
+   * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
+   * multi-taps being recognized.
+   * @constructor
+   * @extends Recognizer
+   */
+
+  function TapRecognizer() {
+    Recognizer.apply(this, arguments); // previous time and center,
+    // used for tap counting
+
+    this.pTime = false;
+    this.pCenter = false;
+    this._timer = null;
+    this._input = null;
+    this.count = 0;
+  }
+
+  inherit(TapRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
+    defaults: {
+      event: 'tap',
+      pointers: 1,
+      taps: 1,
+      interval: 300,
+      // max time between the multi-tap taps
+      time: 250,
+      // max time of the pointer to be down (like finger on the screen)
+      threshold: 9,
+      // a minimal movement is ok, but keep it low
+      posThreshold: 10 // a multi-tap can be a bit off the initial position
+
+    },
+    getTouchAction: function () {
+      return [TOUCH_ACTION_MANIPULATION];
+    },
+    process: function (input) {
+      var options = this.options;
+      var validPointers = input.pointers.length === options.pointers;
+      var validMovement = input.distance < options.threshold;
+      var validTouchTime = input.deltaTime < options.time;
+      this.reset();
+
+      if (input.eventType & INPUT_START && this.count === 0) {
+        return this.failTimeout();
+      } // we only allow little movement
+      // and we've reached an end event, so a tap is possible
+
+
+      if (validMovement && validTouchTime && validPointers) {
+        if (input.eventType != INPUT_END) {
+          return this.failTimeout();
+        }
+
+        var validInterval = this.pTime ? input.timeStamp - this.pTime < options.interval : true;
+        var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+        this.pTime = input.timeStamp;
+        this.pCenter = input.center;
+
+        if (!validMultiTap || !validInterval) {
+          this.count = 1;
+        } else {
+          this.count += 1;
+        }
+
+        this._input = input; // if tap count matches we have recognized it,
+        // else it has began recognizing...
+
+        var tapCount = this.count % options.taps;
+
+        if (tapCount === 0) {
+          // no failing requirements, immediately trigger the tap event
+          // or wait as long as the multitap interval to trigger
+          if (!this.hasRequireFailures()) {
+            return STATE_RECOGNIZED;
+          } else {
+            this._timer = setTimeoutContext(function () {
+              this.state = STATE_RECOGNIZED;
+              this.tryEmit();
+            }, options.interval, this);
+            return STATE_BEGAN;
+          }
+        }
+      }
+
+      return STATE_FAILED;
+    },
+    failTimeout: function () {
+      this._timer = setTimeoutContext(function () {
+        this.state = STATE_FAILED;
+      }, this.options.interval, this);
+      return STATE_FAILED;
+    },
+    reset: function () {
+      clearTimeout(this._timer);
+    },
+    emit: function () {
+      if (this.state == STATE_RECOGNIZED) {
+        this._input.tapCount = this.count;
+        this.manager.emit(this.options.event, this._input);
+      }
+    }
+  });
+  /**
+   * Simple way to create a manager with a default set of recognizers.
+   * @param {HTMLElement} element
+   * @param {Object} [options]
+   * @constructor
+   */
+
+  function Hammer(element, options) {
+    options = options || {};
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
+    return new Manager(element, options);
+  }
+  /**
+   * @const {string}
+   */
+
+
+  Hammer.VERSION = '2.0.7';
+  /**
+   * default settings
+   * @namespace
+   */
+
+  Hammer.defaults = {
+    /**
+     * set if DOM events are being triggered.
+     * But this is slower and unused by simple implementations, so disabled by default.
+     * @type {Boolean}
+     * @default false
+     */
+    domEvents: false,
+
+    /**
+     * The value for the touchAction property/fallback.
+     * When set to `compute` it will magically set the correct value based on the added recognizers.
+     * @type {String}
+     * @default compute
+     */
+    touchAction: TOUCH_ACTION_COMPUTE,
+
+    /**
+     * @type {Boolean}
+     * @default true
+     */
+    enable: true,
+
+    /**
+     * EXPERIMENTAL FEATURE -- can be removed/changed
+     * Change the parent input target element.
+     * If Null, then it is being set the to main element.
+     * @type {Null|EventTarget}
+     * @default null
+     */
+    inputTarget: null,
+
+    /**
+     * force an input class
+     * @type {Null|Function}
+     * @default null
+     */
+    inputClass: null,
+
+    /**
+     * Default recognizer setup when calling `Hammer()`
+     * When creating a new Manager these will be skipped.
+     * @type {Array}
+     */
+    preset: [// RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
+    [RotateRecognizer, {
+      enable: false
+    }], [PinchRecognizer, {
+      enable: false
+    }, ['rotate']], [SwipeRecognizer, {
+      direction: DIRECTION_HORIZONTAL
+    }], [PanRecognizer, {
+      direction: DIRECTION_HORIZONTAL
+    }, ['swipe']], [TapRecognizer], [TapRecognizer, {
+      event: 'doubletap',
+      taps: 2
+    }, ['tap']], [PressRecognizer]],
+
+    /**
+     * Some CSS properties can be used to improve the working of Hammer.
+     * Add them to this method and they will be set when creating a new Manager.
+     * @namespace
+     */
+    cssProps: {
+      /**
+       * Disables text selection to improve the dragging gesture. Mainly for desktop browsers.
+       * @type {String}
+       * @default 'none'
+       */
+      userSelect: 'none',
+
+      /**
+       * Disable the Windows Phone grippers when pressing an element.
+       * @type {String}
+       * @default 'none'
+       */
+      touchSelect: 'none',
+
+      /**
+       * Disables the default callout shown when you touch and hold a touch target.
+       * On iOS, when you touch and hold a touch target such as a link, Safari displays
+       * a callout containing information about the link. This property allows you to disable that callout.
+       * @type {String}
+       * @default 'none'
+       */
+      touchCallout: 'none',
+
+      /**
+       * Specifies whether zooming is enabled. Used by IE10>
+       * @type {String}
+       * @default 'none'
+       */
+      contentZooming: 'none',
+
+      /**
+       * Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+       * @type {String}
+       * @default 'none'
+       */
+      userDrag: 'none',
+
+      /**
+       * Overrides the highlight color shown when the user taps a link or a JavaScript
+       * clickable element in iOS. This property obeys the alpha value, if specified.
+       * @type {String}
+       * @default 'rgba(0,0,0,0)'
+       */
+      tapHighlightColor: 'rgba(0,0,0,0)'
+    }
+  };
+  var STOP = 1;
+  var FORCED_STOP = 2;
+  /**
+   * Manager
+   * @param {HTMLElement} element
+   * @param {Object} [options]
+   * @constructor
+   */
+
+  function Manager(element, options) {
+    this.options = assign({}, Hammer.defaults, options || {});
+    this.options.inputTarget = this.options.inputTarget || element;
+    this.handlers = {};
+    this.session = {};
+    this.recognizers = [];
+    this.oldCssProps = {};
+    this.element = element;
+    this.input = createInputInstance(this);
+    this.touchAction = new TouchAction(this, this.options.touchAction);
+    toggleCssProps(this, true);
+    each(this.options.recognizers, function (item) {
+      var recognizer = this.add(new item[0](item[1]));
+      item[2] && recognizer.recognizeWith(item[2]);
+      item[3] && recognizer.requireFailure(item[3]);
+    }, this);
+  }
+
+  Manager.prototype = {
+    /**
+     * set options
+     * @param {Object} options
+     * @returns {Manager}
+     */
+    set: function (options) {
+      assign(this.options, options); // Options that need a little more setup
+
+      if (options.touchAction) {
+        this.touchAction.update();
+      }
+
+      if (options.inputTarget) {
+        // Clean up existing event listeners and reinitialize
+        this.input.destroy();
+        this.input.target = options.inputTarget;
+        this.input.init();
+      }
+
+      return this;
+    },
+
+    /**
+     * stop recognizing for this session.
+     * This session will be discarded, when a new [input]start event is fired.
+     * When forced, the recognizer cycle is stopped immediately.
+     * @param {Boolean} [force]
+     */
+    stop: function (force) {
+      this.session.stopped = force ? FORCED_STOP : STOP;
+    },
+
+    /**
+     * run the recognizers!
+     * called by the inputHandler function on every movement of the pointers (touches)
+     * it walks through all the recognizers and tries to detect the gesture that is being made
+     * @param {Object} inputData
+     */
+    recognize: function (inputData) {
+      var session = this.session;
+
+      if (session.stopped) {
+        return;
+      } // run the touch-action polyfill
+
+
+      this.touchAction.preventDefaults(inputData);
+      var recognizer;
+      var recognizers = this.recognizers; // this holds the recognizer that is being recognized.
+      // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
+      // if no recognizer is detecting a thing, it is set to `null`
+
+      var curRecognizer = session.curRecognizer; // reset when the last recognizer is recognized
+      // or when we're in a new session
+
+      if (!curRecognizer || curRecognizer && curRecognizer.state & STATE_RECOGNIZED) {
+        curRecognizer = session.curRecognizer = null;
+      }
+
+      var i = 0;
+
+      while (i < recognizers.length) {
+        recognizer = recognizers[i]; // find out if we are allowed try to recognize the input for this one.
+        // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+        // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+        //      that is being recognized.
+        // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+        //      this can be setup with the `recognizeWith()` method on the recognizer.
+
+        if (session.stopped !== FORCED_STOP && ( // 1
+        !curRecognizer || recognizer == curRecognizer || // 2
+        recognizer.canRecognizeWith(curRecognizer))) {
+          // 3
+          recognizer.recognize(inputData);
+        } else {
+          recognizer.reset();
+        } // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+        // current active recognizer. but only if we don't already have an active recognizer
+
+
+        if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+          curRecognizer = session.curRecognizer = recognizer;
+        }
+
+        i++;
+      }
+    },
+
+    /**
+     * get a recognizer by its event name.
+     * @param {Recognizer|String} recognizer
+     * @returns {Recognizer|Null}
+     */
+    get: function (recognizer) {
+      if (recognizer instanceof Recognizer) {
+        return recognizer;
+      }
+
+      var recognizers = this.recognizers;
+
+      for (var i = 0; i < recognizers.length; i++) {
+        if (recognizers[i].options.event == recognizer) {
+          return recognizers[i];
+        }
+      }
+
+      return null;
+    },
+
+    /**
+     * add a recognizer to the manager
+     * existing recognizers with the same event name will be removed
+     * @param {Recognizer} recognizer
+     * @returns {Recognizer|Manager}
+     */
+    add: function (recognizer) {
+      if (invokeArrayArg(recognizer, 'add', this)) {
+        return this;
+      } // remove existing
+
+
+      var existing = this.get(recognizer.options.event);
+
+      if (existing) {
+        this.remove(existing);
+      }
+
+      this.recognizers.push(recognizer);
+      recognizer.manager = this;
+      this.touchAction.update();
+      return recognizer;
+    },
+
+    /**
+     * remove a recognizer by name or instance
+     * @param {Recognizer|String} recognizer
+     * @returns {Manager}
+     */
+    remove: function (recognizer) {
+      if (invokeArrayArg(recognizer, 'remove', this)) {
+        return this;
+      }
+
+      recognizer = this.get(recognizer); // let's make sure this recognizer exists
+
+      if (recognizer) {
+        var recognizers = this.recognizers;
+        var index = inArray(recognizers, recognizer);
+
+        if (index !== -1) {
+          recognizers.splice(index, 1);
+          this.touchAction.update();
+        }
+      }
+
+      return this;
+    },
+
+    /**
+     * bind event
+     * @param {String} events
+     * @param {Function} handler
+     * @returns {EventEmitter} this
+     */
+    on: function (events, handler) {
+      if (events === undefined) {
+        return;
+      }
+
+      if (handler === undefined) {
+        return;
+      }
+
+      var handlers = this.handlers;
+      each(splitStr(events), function (event) {
+        handlers[event] = handlers[event] || [];
+        handlers[event].push(handler);
+      });
+      return this;
+    },
+
+    /**
+     * unbind event, leave emit blank to remove all handlers
+     * @param {String} events
+     * @param {Function} [handler]
+     * @returns {EventEmitter} this
+     */
+    off: function (events, handler) {
+      if (events === undefined) {
+        return;
+      }
+
+      var handlers = this.handlers;
+      each(splitStr(events), function (event) {
+        if (!handler) {
+          delete handlers[event];
+        } else {
+          handlers[event] && handlers[event].splice(inArray(handlers[event], handler), 1);
+        }
+      });
+      return this;
+    },
+
+    /**
+     * emit event to the listeners
+     * @param {String} event
+     * @param {Object} data
+     */
+    emit: function (event, data) {
+      // we also want to trigger dom events
+      if (this.options.domEvents) {
+        triggerDomEvent(event, data);
+      } // no handlers, so skip it all
+
+
+      var handlers = this.handlers[event] && this.handlers[event].slice();
+
+      if (!handlers || !handlers.length) {
+        return;
+      }
+
+      data.type = event;
+
+      data.preventDefault = function () {
+        data.srcEvent.preventDefault();
+      };
+
+      var i = 0;
+
+      while (i < handlers.length) {
+        handlers[i](data);
+        i++;
+      }
+    },
+
+    /**
+     * destroy the manager and unbinds all events
+     * it doesn't unbind dom events, that is the user own responsibility
+     */
+    destroy: function () {
+      this.element && toggleCssProps(this, false);
+      this.handlers = {};
+      this.session = {};
+      this.input.destroy();
+      this.element = null;
+    }
+  };
+  /**
+   * add/remove the css properties as defined in manager.options.cssProps
+   * @param {Manager} manager
+   * @param {Boolean} add
+   */
+
+  function toggleCssProps(manager, add) {
+    var element = manager.element;
+
+    if (!element.style) {
+      return;
+    }
+
+    var prop;
+    each(manager.options.cssProps, function (value, name) {
+      prop = prefixed(element.style, name);
+
+      if (add) {
+        manager.oldCssProps[prop] = element.style[prop];
+        element.style[prop] = value;
+      } else {
+        element.style[prop] = manager.oldCssProps[prop] || '';
+      }
+    });
+
+    if (!add) {
+      manager.oldCssProps = {};
+    }
+  }
+  /**
+   * trigger dom event
+   * @param {String} event
+   * @param {Object} data
+   */
+
+
+  function triggerDomEvent(event, data) {
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent.gesture = data;
+    data.target.dispatchEvent(gestureEvent);
+  }
+
+  assign(Hammer, {
+    INPUT_START: INPUT_START,
+    INPUT_MOVE: INPUT_MOVE,
+    INPUT_END: INPUT_END,
+    INPUT_CANCEL: INPUT_CANCEL,
+    STATE_POSSIBLE: STATE_POSSIBLE,
+    STATE_BEGAN: STATE_BEGAN,
+    STATE_CHANGED: STATE_CHANGED,
+    STATE_ENDED: STATE_ENDED,
+    STATE_RECOGNIZED: STATE_RECOGNIZED,
+    STATE_CANCELLED: STATE_CANCELLED,
+    STATE_FAILED: STATE_FAILED,
+    DIRECTION_NONE: DIRECTION_NONE,
+    DIRECTION_LEFT: DIRECTION_LEFT,
+    DIRECTION_RIGHT: DIRECTION_RIGHT,
+    DIRECTION_UP: DIRECTION_UP,
+    DIRECTION_DOWN: DIRECTION_DOWN,
+    DIRECTION_HORIZONTAL: DIRECTION_HORIZONTAL,
+    DIRECTION_VERTICAL: DIRECTION_VERTICAL,
+    DIRECTION_ALL: DIRECTION_ALL,
+    Manager: Manager,
+    Input: Input,
+    TouchAction: TouchAction,
+    TouchInput: TouchInput,
+    MouseInput: MouseInput,
+    PointerEventInput: PointerEventInput,
+    TouchMouseInput: TouchMouseInput,
+    SingleTouchInput: SingleTouchInput,
+    Recognizer: Recognizer,
+    AttrRecognizer: AttrRecognizer,
+    Tap: TapRecognizer,
+    Pan: PanRecognizer,
+    Swipe: SwipeRecognizer,
+    Pinch: PinchRecognizer,
+    Rotate: RotateRecognizer,
+    Press: PressRecognizer,
+    on: addEventListeners,
+    off: removeEventListeners,
+    each: each,
+    merge: merge,
+    extend: extend,
+    assign: assign,
+    inherit: inherit,
+    bindFn: bindFn,
+    prefixed: prefixed
+  }); // this prevents errors when Hammer is loaded in the presence of an AMD
+  //  style loader but by script tag, not by the loader.
+
+  var freeGlobal = typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : {}; // jshint ignore:line
+
+  freeGlobal.Hammer = Hammer;
+
+  if (typeof define === 'function' && define.amd) {
+    define(function () {
+      return Hammer;
+    });
+  } else if (typeof module != 'undefined' && module.exports) {
+    module.exports = Hammer;
+  } else {
+    window[exportName] = Hammer;
+  }
+})(window, document, 'Hammer');
+},{}],"assets/svg/svg-list.ts":[function(require,module,exports) {
 "use strict";
 
 exports.__esModule = true;
 exports.kuma = "\n\t<svg version=\"1.1\" id=\"_x32_\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" width=\"512px\" height=\"512px\" viewBox=\"0 0 512 512\" style=\"width: 256px; height: 256px; opacity: 1;\" xml:space=\"preserve\">\n\t<g>\n\t\t<path class=\"st0\" d=\"M512,80.688C512,42.203,480.797,11,442.297,11c-34.594,0-63.234,25.219-68.688,58.281H138.391\n\t\t\tC132.938,36.219,104.297,11,69.703,11C31.203,11,0,42.203,0,80.688c0,34.109,24.484,62.438,56.828,68.484\n\t\t\tc-44,85.641-48.938,162.625-48.938,162.625C7.891,356.625,12.031,501,256,501s248.109-144.375,248.109-189.203\n\t\t\tc0,0-4.938-76.984-48.938-162.625C487.516,143.125,512,114.797,512,80.688z M103.266,86.031\n\t\t\tc-7.172,6.75-15.578,15.781-24.234,27.359c-2.969,0.859-6.094,1.328-9.328,1.328c-18.781,0-34.016-15.219-34.016-34.031\n\t\t\tc0-18.781,15.234-34.016,34.016-34.016c18.797,0,34.031,15.234,34.031,34.016C103.734,82.5,103.547,84.281,103.266,86.031z\n\t\t\t M256,457.859c-80.656,0-146.047-49.797-146.047-111.203S175.344,235.453,256,235.453s146.047,49.797,146.047,111.203\n\t\t\tS336.656,457.859,256,457.859z M432.969,113.391c-8.656-11.578-17.063-20.609-24.234-27.359c-0.281-1.75-0.469-3.531-0.469-5.344\n\t\t\tc0-18.781,15.234-34.016,34.031-34.016c18.781,0,34.016,15.234,34.016,34.016c0,18.813-15.234,34.031-34.016,34.031\n\t\t\tC439.063,114.719,435.938,114.25,432.969,113.391z\" style=\"fill: rgb(75, 75, 75);\"></path>\n\t\t<path class=\"st0 hana\" d=\"M307.688,309.734l-14.781-30.969c-3.906-8.203-12.188-13.438-21.281-13.438H256h-15.625\n\t\t\tc-9.094,0-17.375,5.234-21.281,13.438l-14.781,30.969c-2.391,5.031-0.938,11.047,3.484,14.422l41.031,31.344l-41.266,41.266\n\t\t\tl10.563,10.547L256,369.438l37.875,37.875l10.563-10.547l-41.266-41.25l41.031-31.359\n\t\t\tC308.625,320.781,310.078,314.766,307.688,309.734z\" style=\"fill: rgb(75, 75, 75);\"></path>\n\t</g>\n\t</svg>\n";
 exports.ame = "\n<svg version=\"1.1\" id=\"_x32_\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" width=\"512px\" height=\"512px\" viewBox=\"0 0 512 512\" style=\"width: 256px; height: 256px; opacity: 1;\" xml:space=\"preserve\">\n<g>\n  <path class=\"st0\" d=\"M455.727,118.433c-18.344-18.313-42.484-30.891-69.266-35.188c-8.422-21.797-22.438-40.766-40.359-55.031\n    C323.523,10.23,294.586-0.411,263.477,0.011c-31.438,0.406-60.344,12.047-82.547,30.984\n    c-16.656,14.203-29.703,32.516-37.547,53.406c-34.641,0.625-66.031,15.219-88.422,38.25\n    c-22.563,23.141-36.359,55.141-35.875,90.016c0.453,34.875,15.109,66.5,38.281,89.031c23.141,22.563,55.141,36.359,90.016,35.875\n    c47.984-0.641,173.438-2.328,220.625-2.969c34.875-0.453,66.5-15.109,89.016-38.281c22.563-23.141,36.375-55.125,35.891-90.016\n    C492.461,171.996,478.258,140.839,455.727,118.433z M421.258,261.496c-13.75,14.125-32.656,22.906-53.906,23.203\n    c-47.203,0.625-172.656,2.313-220.641,2.953c-21.25,0.281-40.375-8-54.531-21.734c-14.094-13.766-22.875-32.656-23.188-53.922\n    c-0.266-21.25,8.016-40.375,21.734-54.531c13.781-14.078,32.672-22.875,53.922-23.172c4.281-0.063,8.656,0.328,13.266,1.063\n    l24.031,3.859l4.453-23.922c3.422-18.359,13.141-34.563,26.891-46.281c13.766-11.719,31.344-18.813,50.859-19.078\n    c19.313-0.25,36.875,6.234,50.891,17.359c13.984,11.125,24.172,26.813,28.297,44.766l4.391,19.109l19.609,0.266\n    c20.766,0.266,39.422,8.703,53.156,22.359c13.703,13.703,22.219,32.281,22.516,53.188\n    C443.273,228.246,434.992,247.355,421.258,261.496z\" style=\"fill: rgb(75, 75, 75);\"></path>\n  <path class=\"ame\" d=\"M149.398,364.042c0,0-19.625,18.344-24.266,24c-1.766,2.156-3.078,4.734-3.813,7.594\n    c-2.625,10.438,3.703,21.031,14.141,23.671c10.438,2.609,21.031-3.703,23.672-14.14c0.719-2.875,0.766-5.75,0.25-8.484\n    C157.977,389.496,149.398,364.042,149.398,364.042z\" style=\"fill: rgb(75, 75, 75);\"></path>\n  <path class=\"ame\" d=\"M126.18,456.136c0,0-19.625,18.359-24.266,24.016c-1.75,2.172-3.078,4.719-3.797,7.594\n    c-2.641,10.438,3.703,21.031,14.141,23.656c10.438,2.641,21.031-3.688,23.656-14.141c0.719-2.859,0.781-5.75,0.25-8.469\n    C134.758,481.604,126.18,456.136,126.18,456.136z\" style=\"fill: rgb(75, 75, 75);\"></path>\n  <path class=\"ame\" d=\"M265.992,362.464c0,0-19.625,18.359-24.266,24.016c-1.75,2.156-3.078,4.719-3.797,7.578\n    c-2.641,10.453,3.688,21.046,14.125,23.687c10.438,2.609,21.047-3.719,23.672-14.14c0.719-2.891,0.766-5.75,0.234-8.5\n    C274.57,387.933,265.992,362.464,265.992,362.464z\" style=\"fill: rgb(75, 75, 75);\"></path>\n  <path class=\"ame\" d=\"M242.773,454.573c0,0-19.625,18.359-24.25,24.016c-1.766,2.172-3.094,4.719-3.813,7.578\n    c-2.641,10.453,3.688,21.047,14.141,23.672c10.438,2.625,21.031-3.703,23.656-14.141c0.734-2.875,0.766-5.75,0.25-8.469\n    C251.367,480.042,242.773,454.573,242.773,454.573z\" style=\"fill: rgb(75, 75, 75);\"></path>\n  <path class=\"ame\" d=\"M382.586,360.902c0,0-19.625,18.359-24.266,24.016c-1.766,2.156-3.094,4.719-3.813,7.578\n    c-2.625,10.438,3.719,21.046,14.141,23.671c10.453,2.625,21.047-3.703,23.672-14.14c0.734-2.875,0.766-5.75,0.25-8.484\n    C391.164,386.371,382.586,360.902,382.586,360.902z\" style=\"fill: rgb(75, 75, 75);\"></path>\n  <path class=\"ame\" d=\"M359.367,453.011c0,0-19.609,18.344-24.25,24.016c-1.766,2.156-3.078,4.703-3.813,7.578\n    c-2.625,10.438,3.703,21.031,14.141,23.672c10.438,2.625,21.031-3.703,23.672-14.141c0.719-2.875,0.766-5.75,0.234-8.484\n    C367.945,478.464,359.367,453.011,359.367,453.011z\" style=\"fill: rgb(75, 75, 75);\"></path>\n</g>\n</svg>\n";
 exports.usagi = "\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n\t viewBox=\"0 0 255.1 255.1\" style=\"enable-background:new 0 0 255.1 255.1;\" xml:space=\"preserve\" id=\"usagi\">\n<g id=\"\u30A2\u30A6\u30C8\u30E9\u30A4\u30F3\">\n\t<g>\n\t\t<path class=\"st0\" d=\"M174,213.9c-0.7,0-1.4-0.4-1.7-1c-1.3-2.2-6.8-2.8-8.9-3c-2.8-0.3-12.5-0.9-16.6-1.2c-0.3,0-0.6-0.1-0.9-0.3\n\t\t\tc-3-1.7-6.3-2.4-8.3-2.7l0.1,2.5c0,0.3,0,0.6-0.2,0.8c-0.6,1.3-2,2.8-4.4,2.8c-1.5,0-2.4-0.3-3.1-0.6c-0.5-0.2-0.9-0.4-1.6-0.4\n\t\t\tc-1,0-2.3,0.3-3.4,0.6c-1,0.3-2,0.5-2.8,0.5c-2,0-3.3-1.9-3.8-2.7c-0.2-0.3-0.3-0.7-0.3-1.1l0.2-2.8c-1.6,0.1-4.4,0.6-7.7,2.5\n\t\t\tc-0.3,0.2-0.6,0.4-0.9,0.6c-0.3,0.2-0.7,0.3-1.1,0.3c-0.2,0-0.4,0-0.7-0.1c-5.7,0.3-16.1,0.9-19.3,1.7c-4,1-4.7,1.9-4.8,2.1\n\t\t\tc-0.3,0.7-1,1.2-1.8,1.2c0,0,0,0,0,0c-0.8,0-1.5-0.5-1.8-1.2c-0.9-2.1-1.6-5.3-1.9-9.7c-0.2-2.7-0.2-5.5,0.2-8.3\n\t\t\tc-15.1-3.9-25.9-16.7-25.9-31.1c0-14.4,5.5-23.9,16.4-28.2c1.6-18,10.9-34.6,25.1-45c-3.1-5.8-5.8-12.7-7.9-20.6\n\t\t\tc-5.8-21.6-8-55.2,3.1-59.4c0.7-0.3,1.5-0.4,2.3-0.4c1.3,0,2.8,0.4,4.2,1.1c10.1,5.2,23.9,28.2,29.5,49.3c1,3.5,1.7,7,2.3,10.2\n\t\t\tc0.6-3.3,1.3-6.7,2.3-10.2c5.7-21.1,19.4-44.1,29.5-49.3c1.5-0.8,2.9-1.1,4.2-1.1c0.8,0,1.5,0.1,2.3,0.4\n\t\t\tc11.1,4.2,8.9,37.8,3.1,59.4c-2.1,7.9-4.8,14.8-7.9,20.6c14.2,10.4,23.5,27,25.1,45c10.8,4.3,16.3,13.8,16.3,28.1\n\t\t\tc0,14.1-10.1,26.6-24.8,30.8c0.4,3.4,0.9,8.9-0.2,12.8c-0.2,0.9-0.4,1.6-0.6,2.3c-0.3,1.4-0.6,2.4-1.1,3.4\n\t\t\tC175.5,213.4,174.8,213.9,174,213.9C174.1,213.9,174.1,213.9,174,213.9z\"/>\n\t\t<path class=\"st0\" d=\"M163.6,11.9c0.5,0,1.1,0.1,1.6,0.3c8.8,3.3,8.2,33.4,1.9,57c-2.3,8.5-5.2,15.9-8.6,21.7\n\t\t\tc14.5,9.9,24.5,26.5,25.8,45.8l-0.1,0c10.8,3.8,16.2,12.7,16.2,26.7c0,14.1-10.7,25.9-25.1,29.4c0.7,4.6,1.1,10.2,0.1,13.8\n\t\t\tc-0.2,0.9-0.4,1.7-0.6,2.4c-0.3,1.3-0.5,2.2-0.9,2.9c-1.6-2.7-6.1-3.5-10.4-4c-3-0.3-13.9-1-16.7-1.2c-4.2-2.4-9.1-3-10.6-3.1\n\t\t\tl0-0.6c0,0,0,0,0,0l0-1.6l0-1.9c-0.3,0.1-0.5,0.2-0.8,0.3l0.2,8.5c-0.1,0.3-0.8,1.6-2.6,1.6c-1.1,0-1.7-0.2-2.3-0.5\n\t\t\tc-0.6-0.3-1.3-0.5-2.4-0.5c-1.3,0-2.6,0.3-3.8,0.6c-0.9,0.2-1.7,0.4-2.3,0.4c-0.9,0-1.7-1.1-2-1.7l0.4-8c-0.3-0.1-0.5-0.2-0.8-0.2\n\t\t\tl0,0.6l-0.1,2.5c0,0,0,0,0,0l0,0.3c-0.2,0-0.5,0-0.8,0c-1.8,0-5.2,0.4-9.3,2.8c-0.3,0.2-0.7,0.4-1,0.6l0-0.1\n\t\t\tc-0.7,0-16,0.7-20.4,1.8c-3.6,0.9-5.5,1.9-6.1,3.3c-0.7-1.5-1.4-4.2-1.7-9.1c-0.3-3.5,0-6.8,0.4-9.7c-15-3.1-26.1-15.2-26.1-29.6\n\t\t\tc0-14,5.5-23,16.3-26.7c1.3-19.3,11.3-35.9,25.8-45.8c-3.4-5.9-6.3-13.2-8.6-21.7c-6.3-23.6-6.9-53.7,1.9-57\n\t\t\tc0.5-0.2,1-0.3,1.6-0.3c1,0,2.1,0.3,3.3,0.9c9.5,4.9,23.1,27.8,28.5,48.1c2,7.5,3.1,14.4,3.4,20.4c0.3,0,0.5,0,0.8,0\n\t\t\tc0,0,0,0,0.1,0l0,0c0,0,0,0,0,0c0.1,0,0.5,0,0.8,0c0.2-6,1.4-12.9,3.4-20.4c5.4-20.3,19-43.2,28.5-48.1\n\t\t\tC161.5,12.2,162.6,11.9,163.6,11.9 M163.6,7.9c-1.7,0-3.4,0.5-5.2,1.4c-11.6,6-25.4,31.4-30.5,50.6c-0.1,0.4-0.2,0.9-0.3,1.3\n\t\t\tc-0.1-0.4-0.2-0.9-0.3-1.3c-5.1-19.1-18.9-44.6-30.5-50.6c-1.8-0.9-3.5-1.4-5.2-1.4c-1,0-2,0.2-3,0.5c-13,4.9-10.2,39.8-4.3,61.8\n\t\t\tc2,7.4,4.4,13.9,7.3,19.5c-13.6,10.5-22.5,26.7-24.4,44.2c-8,3.6-16.5,11.6-16.5,29.5c0,7.9,3,15.6,8.5,21.7\n\t\t\tc4.5,5,10.6,8.8,17.3,10.9c-0.2,2.4-0.2,4.7,0,7c0.4,4.7,1.1,8.1,2.1,10.4c0.6,1.4,2.1,2.4,3.7,2.4c0,0,0,0,0,0\n\t\t\tc1.5,0,2.8-0.8,3.5-2.1c0.3-0.2,1.1-0.7,3.6-1.3c2.8-0.7,12.3-1.3,18.6-1.7c0.3,0.1,0.6,0.1,0.9,0.1c0.8,0,1.6-0.2,2.2-0.7\n\t\t\tc0.3-0.2,0.5-0.4,0.8-0.5c1.7-1,3.3-1.6,4.6-1.9l0,0.3c0,0.8,0.1,1.6,0.6,2.3c0.6,1.1,2.5,3.6,5.5,3.6c1,0,2.1-0.3,3.3-0.6\n\t\t\tc1-0.2,2.1-0.5,2.9-0.5c0.4,0,0.4,0,0.9,0.2c0.8,0.3,1.9,0.8,3.8,0.8c3.4,0,5.5-2.2,6.3-4c0.2-0.5,0.3-1.1,0.3-1.6l0-0.1\n\t\t\tc1.6,0.4,3.5,1,5.3,2c0.5,0.3,1.1,0.5,1.7,0.5c3.1,0.2,13.6,0.9,16.5,1.2c6.1,0.6,7.2,1.7,7.4,2c0.7,1.2,2,2,3.4,2\n\t\t\tc0,0,0.1,0,0.1,0c1.4,0,2.8-0.8,3.4-2.1c0.6-1.2,0.9-2.4,1.3-3.8c0.2-0.7,0.3-1.4,0.6-2.2c1-3.6,0.8-8.3,0.4-12\n\t\t\tc14.7-4.9,24.6-17.7,24.6-32.3c0-17.9-8.4-25.9-16.4-29.5c-1.9-17.5-10.8-33.6-24.4-44.2c2.9-5.6,5.3-12.1,7.3-19.5\n\t\t\tc5.9-22,8.6-56.9-4.3-61.8C165.6,8.1,164.6,7.9,163.6,7.9L163.6,7.9z\"/>\n\t</g>\n</g>\n<g id=\"\u9854\">\n\t<g>\n\t\t<path class=\"st1\" d=\"M184.2,136.7L184.2,136.7c-1.3-19.3-11.3-35.9-25.8-45.8c3.4-5.9,6.3-13.2,8.6-21.7c6.3-23.6,6.9-53.7-1.9-57\n\t\t\tc-1.4-0.5-3-0.3-4.9,0.7c-9.5,4.9-23.1,27.8-28.5,48.1c-2,7.5-3.1,14.3-3.4,20.4c-0.3,0-0.6,0-0.8,0c0,0,0,0,0,0l0,0\n\t\t\tc0,0-0.1,0-0.1,0c-0.3,0-0.5,0-0.8,0c-0.2-6-1.4-12.9-3.4-20.4c-5.4-20.3-19-43.2-28.5-48.1c-1.9-1-3.5-1.2-4.9-0.7\n\t\t\tc-8.8,3.3-8.2,33.4-1.9,57c2.3,8.5,5.2,15.9,8.6,21.7c-14.5,9.9-24.5,26.5-25.8,45.8c-10.8,3.7-16.3,12.7-16.3,26.7\n\t\t\tc0,16.7,15.1,30.4,33.6,30.4c7.2,0,14.1-1.1,20.3-3.1c3.4,6.4,10.7,10.5,18.7,10.5c8.2,0,15.5-4.2,18.8-10.7\n\t\t\tc6.3,2.2,13.3,3.3,20.7,3.3c18.5,0,33.6-13.6,33.6-30.4C200.5,149.5,195,140.5,184.2,136.7z\"/>\n\t</g>\n</g>\n<g id=\"\u8033\">\n\t<path class=\"st2\" d=\"M106.7,86c2.9-1.2,6-2.2,9.1-2.9c1.4-4.6,0.9-12.4-1.8-22.5C109.8,44.8,99.5,27.3,95.3,29\n\t\tc-4.2,1.7-3.4,19.8,0.9,35.6C99,75.3,102.9,82.7,106.7,86z\"/>\n\t<path class=\"st2\" d=\"M149,86c-2.9-1.2-6-2.2-9.1-2.9c-1.4-4.6-0.9-12.4,1.8-22.5c4.2-15.8,14.5-33.3,18.7-31.6\n\t\tc4.2,1.7,3.4,19.8-0.9,35.6C156.7,75.3,152.8,82.7,149,86z\"/>\n</g>\n<g id=\"\u76EE\">\n\t<path class=\"st3\" d=\"M149.7,131.4c0,0,0.8,1,0.6,1.8c-1.9,1.3-3.3,4.2-3.3,7.5c0,4.6,2.5,8.2,5.5,8.2c3,0,5.5-3.7,5.5-8.2\n\t\tC158,131.9,149.7,131.4,149.7,131.4z M150,141.1c-0.6,0-1.1-0.8-1.1-1.8c0-1,0.5-1.8,1.1-1.8c0.6,0,1.1,0.8,1.1,1.8\n\t\tC151.1,140.3,150.6,141.1,150,141.1z\"/>\n\t<path class=\"st3\" d=\"M100.1,131.4c0,0,0.8,1,0.6,1.8c-1.9,1.3-3.3,4.2-3.3,7.5c0,4.6,2.5,8.2,5.5,8.2c3,0,5.5-3.7,5.5-8.2\n\t\tC108.5,131.9,100.1,131.4,100.1,131.4z M100.5,141.1c-0.6,0-1.1-0.8-1.1-1.8c0-1,0.5-1.8,1.1-1.8c0.6,0,1.1,0.8,1.1,1.8\n\t\tC101.6,140.3,101.1,141.1,100.5,141.1z\"/>\n</g>\n<g id=\"\u6B6F1\">\n\t<path class=\"st1\" d=\"M121.7,181.7h4.5c0,0,1-0.5,1-2.5c0,2,1,2.4,1,2.4h4.6c0,0,2-6.6,2-15.6h-14.8\n\t\tC119.9,166.1,119.4,175.5,121.7,181.7z\"/>\n</g>\n<g id=\"\u6B6F2\">\n\t<path class=\"st3\" d=\"M126.1,182.2h-4.5c-0.2,0-0.4-0.1-0.5-0.3c-2.3-6.2-1.8-15.4-1.8-15.8c0-0.3,0.2-0.5,0.5-0.5h14.8\n\t\tc0.3,0,0.5,0.2,0.5,0.5c0,9-2,15.7-2,15.7c-0.1,0.2-0.3,0.4-0.5,0.4h-4.6c-0.1,0-0.1,0-0.2,0c-0.1,0-0.5-0.2-0.8-0.8\n\t\tc-0.3,0.6-0.8,0.8-0.8,0.8C126.3,182.2,126.2,182.2,126.1,182.2z M122,181.2h4c0.7,0,1.2-3.2,1.2-3.2s0.4,3.1,1.2,3.1h4.1\n\t\tc0.4-1.4,1.8-7.2,1.9-14.6h-13.8C120.3,168.5,120.2,176,122,181.2z\"/>\n</g>\n<g id=\"\u307B\u3063\u307A_xFF1F_\">\n\t<path class=\"st4\" d=\"M148.3,145.2c-9.4,0-17.5,2.7-20.4,10c-3-7.3-11-10-20.4-10c-12,0-21.6,8.3-21.6,18.6\n\t\tc0,10.3,9.7,18.6,21.6,18.6c9.4,0,17.5-5.2,20.4-12.5c3,7.3,11,12.5,20.4,12.5c12,0,21.6-8.3,21.6-18.6\n\t\tC170,153.5,160.3,145.2,148.3,145.2z\"/>\n</g>\n<g id=\"\u9F3B\">\n\t<path class=\"st2\" d=\"M130.6,156.2c0,0-0.3-2.1,1.7-4.6c2.1-2.6,5-0.9,5-0.9c1-1.8,0.9-4.9-3.5-5.9s-6.3,0.9-6.3,0.9h-0.1\n\t\tc0,0-1.9-1.9-6.3-0.9s-4.5,4.1-3.5,5.9c0,0,2.9-1.7,5,0.9c2,2.5,1.7,4.6,1.7,4.6S130.6,156.2,130.6,156.2z\"/>\n</g>\n<g id=\"\u3072\u3052\">\n\t<path class=\"st3\" d=\"M97.8,152.7C97.8,152.7,97.7,152.7,97.8,152.7l-34.5-5.9c-0.3,0-0.5-0.3-0.4-0.6c0-0.3,0.3-0.5,0.6-0.4\n\t\tl34.4,5.9c0.3,0,0.5,0.3,0.4,0.6C98.2,152.5,98,152.7,97.8,152.7z\"/>\n\t<path class=\"st3\" d=\"M59.6,162.4c-0.3,0-0.5-0.2-0.5-0.5c0-0.3,0.2-0.5,0.5-0.5l40.1-3.5c0.3,0,0.5,0.2,0.5,0.5\n\t\tc0,0.3-0.2,0.5-0.5,0.5L59.6,162.4C59.6,162.4,59.6,162.4,59.6,162.4z\"/>\n\t<path class=\"st3\" d=\"M64.3,175c-0.2,0-0.4-0.1-0.5-0.3c-0.1-0.3,0.1-0.5,0.3-0.6l32.8-10.5c0.3-0.1,0.5,0.1,0.6,0.3\n\t\tc0.1,0.3-0.1,0.5-0.3,0.6L64.4,175C64.4,175,64.3,175,64.3,175z\"/>\n\t<path class=\"st3\" d=\"M157.1,152.7c-0.2,0-0.5-0.2-0.5-0.4c0-0.3,0.1-0.5,0.4-0.6l34.4-5.9c0.3,0,0.5,0.1,0.6,0.4\n\t\tc0,0.3-0.1,0.5-0.4,0.6L157.1,152.7C157.2,152.7,157.2,152.7,157.1,152.7z\"/>\n\t<path class=\"st3\" d=\"M195.4,162.4C195.4,162.4,195.3,162.4,195.4,162.4l-40.2-3.5c-0.3,0-0.5-0.3-0.5-0.5c0-0.3,0.3-0.5,0.5-0.5\n\t\tl40.1,3.5c0.3,0,0.5,0.3,0.5,0.5C195.9,162.2,195.6,162.4,195.4,162.4z\"/>\n\t<path class=\"st3\" d=\"M190.7,175c-0.1,0-0.1,0-0.2,0l-32.8-10.5c-0.3-0.1-0.4-0.4-0.3-0.6c0.1-0.3,0.4-0.4,0.6-0.3l32.8,10.5\n\t\tc0.3,0.1,0.4,0.4,0.3,0.6C191.1,174.9,190.9,175,190.7,175z\"/>\n</g>\n<g id=\"\u3066\u3093\">\n\t<ellipse class=\"st3\" cx=\"104.1\" cy=\"153\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"99.7\" cy=\"158.4\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"97.4\" cy=\"163.6\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"94.1\" cy=\"158\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"97.8\" cy=\"152.2\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"106.5\" cy=\"157.5\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"104\" cy=\"163.1\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"150.6\" cy=\"153\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"155.1\" cy=\"158.4\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"157.3\" cy=\"163.6\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"160.6\" cy=\"158\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"157\" cy=\"152.2\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"148.3\" cy=\"157.5\" rx=\"1.1\" ry=\"1.1\"/>\n\t<ellipse class=\"st3\" cx=\"150.8\" cy=\"163.1\" rx=\"1.1\" ry=\"1.1\"/>\n</g>\n<g id=\"\u308A\u307C\u30931\">\n\t<g>\n\t\t<path class=\"st0\" d=\"M89.8,216.6c-3,0-5.6-0.5-6.7-0.9c-0.6-0.2-1.4-0.7-2.2-1.8c-0.4-0.5-0.4-1.2-0.2-1.8\n\t\t\tc0.6-3.1,5.2-4.2,7.2-4.7c3.7-0.9,15-1.6,19.6-1.8c0,0,0.1,0,0.1,0c0.8,0,1.6,0.5,1.9,1.3c0.3,0.8,0,1.8-0.7,2.3\n\t\t\tc-1.7,1.2-3.4,2.8-5,4.7c-0.4,0.4-0.9,0.7-1.5,0.7c-0.2,0-0.3,0-0.5-0.1c-0.1,0-0.1,0-0.2-0.1c-0.9,0.2-2.5,0.7-5.2,1.4\n\t\t\tC94.5,216.3,92.2,216.6,89.8,216.6C89.8,216.6,89.8,216.6,89.8,216.6z\"/>\n\t\t<path class=\"st0\" d=\"M107.7,207.5c-1.8,1.3-3.6,3-5.3,4.9l-0.1-0.4c-0.1,0-1.3,0.3-6.4,1.7c-2,0.6-4.2,0.8-6.1,0.8\n\t\t\tc-2.8,0-5.1-0.4-5.9-0.8c-0.3-0.1-0.7-0.3-1.3-1.1h0.1c0-1.4,1.8-2.5,5.7-3.5C92.2,208.4,104.2,207.7,107.7,207.5 M107.7,203.5\n\t\t\tc-0.1,0-0.1,0-0.2,0c-5.9,0.3-16.2,0.9-20,1.9c-2.2,0.5-7.7,1.9-8.7,6.1c-0.4,1.2-0.2,2.4,0.5,3.5c1.1,1.6,2.3,2.2,3.1,2.5\n\t\t\tc1.6,0.6,4.5,1,7.4,1c2.6,0,5-0.3,7.2-0.9c2.2-0.6,3.7-1,4.7-1.3c0.2,0,0.5,0.1,0.7,0.1c1.1,0,2.2-0.5,3-1.3\n\t\t\tc1.6-1.8,3.2-3.2,4.7-4.4c1.4-1,2-2.9,1.4-4.6C110.9,204.6,109.4,203.5,107.7,203.5L107.7,203.5z\"/>\n\t</g>\n\t<g>\n\t\t<path class=\"st0\" d=\"M109.3,243.9c-1.9,0-4.1-0.7-6.3-1.4c-1.4-0.4-2.8-0.8-3.7-1c-0.3,0-0.6-0.1-0.9-0.1c-0.7,0-1.3,0.1-2,0.2\n\t\t\tc-0.7,0.1-1.4,0.2-2.1,0.2c-1,0-1.9-0.2-2.8-0.6c-1-0.4-1.8-1.2-2.1-2.2c-1-2.4,0-6.3,3.3-13.8c3.8-8.6,10.3-16.5,16.4-20.2\n\t\t\tc4.4-2.6,8.1-3,10-3c0.3,0,0.6,0,0.8,0c1.1,0.1,1.9,1,1.9,2.1l-0.2,4c0,0.3-0.1,0.7-0.3,0.9c-6.3,10.1-6.5,18-6.6,23.2\n\t\t\tc0,1-0.1,1.8-0.1,2.6c-0.1,1-0.1,1.8-0.1,2.5c-0.1,3.1-0.2,5-3.3,6C110.5,243.8,110,243.9,109.3,243.9L109.3,243.9z\"/>\n\t\t<path class=\"st0\" d=\"M119,204.2c0.3,0,0.5,0,0.7,0l-0.2,4c-6.5,10.6-6.8,18.8-6.9,24.2c0,0.9,0,1.8-0.1,2.5\n\t\t\tc-0.1,1-0.1,1.9-0.1,2.6c-0.1,3-0.2,3.6-1.9,4.2c-0.3,0.1-0.7,0.1-1.1,0.1c-1.6,0-3.8-0.7-5.8-1.3c-1.5-0.4-2.9-0.9-4-1\n\t\t\tc-0.4-0.1-0.8-0.1-1.2-0.1c-0.9,0-1.6,0.1-2.3,0.2c-0.6,0.1-1.2,0.2-1.8,0.2c-0.6,0-1.3-0.1-2-0.4c-0.5-0.2-0.9-0.6-1.1-1.1\n\t\t\tc-0.7-1.8,0.3-5.6,3.3-12.2c3.7-8.2,9.8-15.8,15.6-19.3C114,204.5,117.4,204.2,119,204.2 M119,200.2c-2.1,0-6.2,0.4-11,3.3\n\t\t\tc-6.6,3.9-13.2,12-17.2,21.1c-3.6,8.1-4.5,12.3-3.3,15.3c0.6,1.5,1.7,2.7,3.2,3.3c1.2,0.5,2.3,0.7,3.6,0.7c0.9,0,1.7-0.1,2.4-0.3\n\t\t\tc0.6-0.1,1.1-0.2,1.6-0.2c0.2,0,0.4,0,0.6,0c0.8,0.1,2.1,0.5,3.4,0.9c2.3,0.7,4.8,1.5,6.9,1.5c0.8,0,1.6-0.1,2.3-0.3\n\t\t\tc4.4-1.4,4.6-4.7,4.7-7.8c0-0.7,0.1-1.5,0.1-2.5c0.1-0.8,0.1-1.7,0.1-2.6c0.1-5.3,0.4-12.6,6.3-22.3c0.4-0.6,0.6-1.2,0.6-1.9\n\t\t\tl0.2-4c0.1-2.2-1.5-4.1-3.7-4.2C119.7,200.2,119.4,200.2,119,200.2L119,200.2z\"/>\n\t</g>\n\t<g>\n\t\t<path class=\"st0\" d=\"M145.7,244.4c-2.1,0-3.2-1.2-3.6-1.9c-1.1-1.8-1.1-5-1.1-10c0-2.9,0-5.9-0.4-7.6c-1.2-5.3-3.6-12.2-5.8-14.7\n\t\t\tc-0.5-0.6-0.6-1.4-0.4-2l-0.1-3.6c0-0.6,0.2-1.1,0.6-1.5c0.4-0.3,0.9-0.5,1.4-0.5c0.1,0,0.1,0,0.2,0c1.8,0.2,6.5,0.8,10.6,3\n\t\t\tc0.1,0,0.2,0.1,0.2,0.1c0.1,0,0.2,0.1,0.3,0.1c1.3,0.8,2.5,1.6,3.4,2.6c5.1,5.2,12.3,16.4,14.4,22.5c1.6,4.5,1.8,7.6,0.7,9.4\n\t\t\tc-0.5,0.8-1.3,1.3-2.2,1.4c-0.3,0-0.5,0-0.9,0c-0.4,0-0.9,0-1.5,0c-0.7,0-1.5-0.1-2.4-0.1c-1.8,0-3.4,0.2-4.8,0.5\n\t\t\tc-1.2,0.3-2.4,0.7-3.6,1.1C149,243.8,147.2,244.4,145.7,244.4z\"/>\n\t\t<path class=\"st0\" d=\"M136.4,204.4c1.5,0.1,5.9,0.7,9.9,2.8l0,0.2c0,0,0.2,0,0.5,0c1.1,0.6,2.1,1.4,3,2.3c4.9,5,11.9,16,14,21.7\n\t\t\tc1.8,5.2,1.2,7.1,0.9,7.6c-0.2,0.3-0.4,0.4-0.7,0.5c-0.2,0-0.4,0-0.7,0c-0.4,0-0.9,0-1.4,0c-0.7,0-1.6-0.1-2.5-0.1\n\t\t\tc-1.6,0-3.4,0.1-5.3,0.5c-1.3,0.3-2.6,0.8-3.8,1.2c-1.7,0.6-3.2,1.2-4.4,1.2c-0.8,0-1.4-0.3-1.8-0.9c-0.9-1.5-0.8-5.3-0.8-9\n\t\t\tc0-3,0-6.1-0.4-8.1c-1-4.6-3.5-12.5-6.3-15.6c0.1-0.1,0.1-0.2,0.1-0.3l0-0.1L136.4,204.4 M136.4,200.4c-1,0-2,0.4-2.7,1.1\n\t\t\tc-0.8,0.8-1.3,1.9-1.3,3l0.1,3.3c-0.3,1.3,0,2.6,0.8,3.6c1.9,2.2,4.3,8.9,5.4,13.9c0.3,1.5,0.3,4.5,0.3,7.2c0,5.4,0,8.7,1.3,11\n\t\t\tc1.1,1.9,3,2.9,5.3,2.9c1.9,0,3.8-0.7,5.8-1.4c1.2-0.4,2.3-0.8,3.4-1.1c1.3-0.3,2.7-0.4,4.4-0.4c0.8,0,1.6,0,2.3,0.1\n\t\t\tc0.6,0,1.1,0.1,1.6,0.1c0.4,0,0.8,0,1.1-0.1c1.5-0.2,2.8-1,3.7-2.3c1.5-2.3,1.3-6-0.5-11.1c-2.2-6.3-9.6-17.8-14.9-23.2\n\t\t\tc-1.1-1.1-2.4-2.1-3.8-2.9c-0.1-0.1-0.2-0.1-0.3-0.1c-0.1-0.1-0.2-0.1-0.3-0.2c-4.5-2.5-9.5-3.1-11.4-3.3\n\t\t\tC136.6,200.4,136.5,200.4,136.4,200.4L136.4,200.4z\"/>\n\t</g>\n\t<g>\n\t\t<path class=\"st0\" d=\"M166.5,216.6c-5.3,0-12-2.2-14-2.9c-0.6,0-1.1-0.3-1.5-0.7c-0.8-0.9-1.5-1.8-2.1-2.4c-0.5-0.5-1-1-1.6-1.4\n\t\t\tc-0.7-0.5-1-1.5-0.7-2.3c0.3-0.8,1-1.3,1.9-1.3c0,0,0.1,0,0.1,0c4.6,0.3,12.7,0.9,15.3,1.1c3.2,0.3,9.7,1,11.6,5.1\n\t\t\tc0.3,0.7,0.2,1.6-0.4,2.2c-1.2,1.2-2.8,1.8-5.4,2.3C168.7,216.5,167.7,216.6,166.5,216.6C166.5,216.6,166.5,216.6,166.5,216.6z\"/>\n\t\t<path class=\"st0\" d=\"M148.3,207.5c4,0.3,12.5,0.9,15.2,1.1c2.6,0.3,8.6,0.9,10,3.9c-0.7,0.8-2,1.2-4.4,1.8\n\t\t\tc-0.8,0.2-1.7,0.3-2.7,0.3c-5.9,0-13.9-3-14-3l0,0.1c-0.8-0.9-1.5-1.8-2.3-2.5C149.7,208.6,149,208,148.3,207.5 M148.3,203.5\n\t\t\tc-1.7,0-3.2,1.1-3.8,2.7c-0.6,1.7,0,3.6,1.4,4.6c0.5,0.4,1,0.8,1.4,1.2c0.6,0.6,1.3,1.4,2,2.3c0.7,0.8,1.6,1.3,2.6,1.4\n\t\t\tc2.4,0.8,9,3,14.5,3c1.3,0,2.5-0.1,3.5-0.4c2.9-0.7,4.9-1.3,6.4-2.9c1.1-1.2,1.4-2.9,0.8-4.4c-2.3-5.1-9.7-5.9-13.2-6.2\n\t\t\tc-2.6-0.3-10.7-0.8-15.3-1.1C148.5,203.5,148.4,203.5,148.3,203.5L148.3,203.5z\"/>\n\t</g>\n</g>\n<g id=\"\u308A\u307C\u30932\">\n\t<path class=\"st5\" d=\"M83.5,184.5c0.9-1.1,3.3-0.9,6.4-0.6c0.6,0.1,1.2,0.1,1.8,0.2c3,0.3,10.7,3.5,16.3,5.9\n\t\tc1.8,0.8,3.4,1.4,4.5,1.9c4,1.5,7.2,5.5,7.6,6l-0.3,5.6c-1.4-0.1-5.3-0.1-10.1,2.8c-0.3,0.2-0.7,0.4-1,0.6l0-0.1\n\t\tc-0.7,0-16,0.7-20.4,1.8c-3.6,0.9-5.5,1.9-6.1,3.3c-0.7-1.5-1.4-4.2-1.7-9.1C79.7,193.8,82.3,185.9,83.5,184.5z\"/>\n\t<path class=\"st6\" d=\"M102.3,212.1c-0.1,0-1.3,0.3-6.4,1.7c-5,1.4-10.6,0.6-12,0c-0.3-0.1-0.7-0.3-1.3-1.1h0.1\n\t\tc0-1.4,1.8-2.5,5.7-3.5c3.7-0.9,15.7-1.6,19.3-1.7c-1.8,1.3-3.6,3-5.3,4.9L102.3,212.1z\"/>\n\t<path class=\"st5\" d=\"M112.6,232.5c0,0.9,0,1.8-0.1,2.5c-0.1,1-0.1,1.9-0.1,2.6c-0.1,3-0.2,3.6-1.9,4.2c-1.5,0.5-4.3-0.4-6.8-1.1\n\t\tc-1.5-0.4-2.9-0.9-4-1c-1.4-0.2-2.5,0-3.5,0.2c-1.3,0.2-2.4,0.4-3.8-0.2c-0.5-0.2-0.9-0.6-1.1-1.1c-0.7-1.8,0.3-5.6,3.3-12.2\n\t\tc3.7-8.2,9.8-15.8,15.6-19.3c4.6-2.8,8.4-2.8,9.6-2.7l-0.2,4C113,218.8,112.7,227,112.6,232.5z\"/>\n\t<path class=\"st5\" d=\"M133.1,209.9c-1.1,0-1.7-0.2-2.3-0.5c-0.6-0.3-1.3-0.5-2.4-0.5c-1.3,0-2.6,0.3-3.8,0.6\n\t\tc-0.9,0.2-1.7,0.4-2.3,0.4c-0.9,0-1.7-1.1-2-1.7l0.6-11.5c0.1-0.3,0.6-2.6,2.4-2.4c1,0.1,1.6,0.4,2.2,0.7c0.6,0.3,1.2,0.7,2.3,0.7\n\t\tc1.1,0,1.9-0.4,2.7-0.9c0.7-0.4,1.4-0.7,2.2-0.7c1.2,0,2.4,1.8,2.8,2.6l0.3,11.5C135.6,208.6,134.9,209.9,133.1,209.9z\"/>\n\t<path class=\"st5\" d=\"M164.5,239.1c-0.2,0.3-0.4,0.4-0.7,0.5c-0.5,0.1-1.2,0-2.1,0c-2-0.1-4.8-0.2-7.8,0.5c-1.3,0.3-2.6,0.8-3.8,1.2\n\t\tc-2.8,1-5.3,1.9-6.3,0.2c-0.9-1.5-0.8-5.3-0.8-9c0-3,0-6.1-0.4-8.1c-1-4.6-3.5-12.5-6.3-15.6c0.1-0.1,0.1-0.2,0.1-0.3l0-0.1l-0.1-4\n\t\tc1.5,0.1,5.9,0.7,9.9,2.8l0.3,0.1c0,0,0.2,0,0.2,0.1c1.1,0.6,2.1,1.4,3,2.3c4.9,5,11.9,16,14,21.7\n\t\tC165.5,236.7,164.9,238.6,164.5,239.1z\"/>\n\t<path class=\"st6\" d=\"M169.2,214.4c-5.8,1.3-16.5-2.7-16.6-2.8l0,0.1c-0.8-0.9-1.5-1.8-2.3-2.5c-0.6-0.6-1.2-1.1-1.9-1.6\n\t\tc4,0.3,12.5,0.9,15.2,1.1c2.6,0.3,8.6,0.9,10,3.9C172.8,213.4,171.6,213.8,169.2,214.4z\"/>\n\t<path class=\"st5\" d=\"M175.5,206.6c-0.2,0.9-0.4,1.7-0.6,2.4c-0.3,1.3-0.5,2.2-0.9,2.9c-1.6-2.7-6.1-3.5-10.4-4\n\t\tc-3-0.3-13.9-1-16.7-1.2c-4.2-2.4-9.1-3-10.6-3.1l-0.1-5.9c0.4-0.7,2.5-4,6.9-5.9c10.5-4.5,17.6-7,21.2-7.5c0.5-0.1,1-0.1,1.5-0.2\n\t\tc4.3-0.6,6.9-1,8.1,2.4C175.3,190.3,177.1,201,175.5,206.6z\"/>\n\t<path class=\"st6\" d=\"M119.9,200.2c-1-2.1-5.3-6.4-12.4-6.5c-7.1-0.2-4.7,2.3-3.8,4.9c0.9,2.5,1.3,4.3,3.8,3.6\n\t\tc2.5-0.7,9.1-0.1,12.2,1L119.9,200.2z\"/>\n\t<path class=\"st6\" d=\"M136.3,200c0,0,4.7-6.3,11.3-6.1c6.6,0.3,3,2.3,2.3,2.6c-0.8,0.3-2.3,2.3,1.3,2.6s4.2,2.4-3.6,2.4\n\t\tc-7.8,0-11.2,1.3-11.2,1.3\"/>\n</g>\n<g id=\"\u308A\u307C\u30933\">\n\t<path class=\"st1\" d=\"M174.6,186.2c-0.8-2.3-2.3-3.3-4.8-3.3c-1.2,0-2.5,0.2-4.1,0.4c-0.5,0.1-1,0.1-1.5,0.2\n\t\tc-3.7,0.5-10.9,3.1-21.4,7.6c-3.6,1.5-5.7,4.1-6.7,5.4c0,0,0-0.1,0-0.1c-0.2-0.3-1.6-3-3.5-3c-1,0-1.8,0.4-2.5,0.8\n\t\tc-0.8,0.4-1.5,0.8-2.3,0.8c-0.8,0-1.3-0.3-1.9-0.6c-0.6-0.3-1.3-0.7-2.5-0.8c-0.1,0-0.1,0-0.2,0c-1.7,0-2.7,1.6-3,3.1\n\t\tc0,0,0,0.1,0,0.1l0,0c-1.2-1.4-4-4.3-7.4-5.7c-1.1-0.4-2.8-1.1-4.5-1.9c-5.7-2.4-13.4-5.6-16.5-5.9c-0.6-0.1-1.2-0.1-1.7-0.2\n\t\tl-0.1,0.7l0.1-0.7c-1.4-0.1-2.7-0.3-3.7-0.3c-1.2,0-2.6,0.1-3.4,1.1c-1.2,1.6-4,9.5-3.2,18.8c0.3,4.2,0.9,7.4,1.8,9.3\n\t\tc0.1,0.2,0.3,0.4,0.5,0.4c-0.1,0.2-0.1,0.5,0.1,0.7c0.7,1,1.3,1.2,1.6,1.3c1,0.4,3.5,0.8,6.2,0.8c2.3,0,4.4-0.3,6.3-0.8\n\t\tc3.3-0.9,5-1.4,5.8-1.6c0,0,0.1,0,0.1,0c-3.2,3.7-6.1,8.1-8.1,12.8c-3.1,6.9-4.1,10.8-3.3,12.8c0.3,0.7,0.8,1.2,1.5,1.5\n\t\tc0.8,0.3,1.5,0.5,2.3,0.5c0.7,0,1.3-0.1,1.9-0.2c0.7-0.1,1.4-0.2,2.2-0.2c0.4,0,0.7,0,1.1,0.1c1.1,0.2,2.4,0.6,3.9,1\n\t\tc2,0.6,4.3,1.3,6,1.3c0.5,0,0.9-0.1,1.3-0.2c2.3-0.7,2.3-1.8,2.5-4.9c0-0.7,0.1-1.6,0.1-2.6c0.1-0.8,0.1-1.6,0.1-2.5\n\t\tc0.1-5.3,0.4-13.3,6.6-23.5c0.4,0.6,1.3,1.7,2.4,1.7c0.6,0,1.5-0.2,2.5-0.5c1.2-0.3,2.5-0.6,3.7-0.6c1,0,1.5,0.2,2.1,0.5\n\t\tc0.7,0.3,1.3,0.5,2.6,0.5c1.3,0,2.2-0.5,2.8-1.2c2.6,3.1,5,10.7,6,15.2c0.4,1.9,0.4,5,0.4,7.9c0,4,0,7.7,0.9,9.4\n\t\tc0.5,0.9,1.3,1.3,2.5,1.3c1.3,0,3-0.6,4.7-1.2c1.2-0.4,2.5-0.9,3.7-1.2c1.6-0.4,3.2-0.5,5.1-0.5c0.9,0,1.7,0,2.5,0.1\n\t\tc0.6,0,1.1,0,1.5,0c0.3,0,0.5,0,0.7,0c0.4,0,0.9-0.2,1.3-0.8c0.6-1,1-3.2-0.8-8.3c-1.7-4.8-6.7-13-11.1-18.6\n\t\tc2.3,0.8,8.4,2.7,13.3,2.7c1.1,0,2-0.1,2.8-0.3c2.3-0.5,3.8-1,4.7-2c0.1-0.2,0.2-0.4,0.2-0.6c0.2-0.1,0.3-0.2,0.4-0.3\n\t\tc0.4-0.8,0.7-1.8,1-3c0.2-0.7,0.3-1.4,0.6-2.3C177.8,201.1,176,190.2,174.6,186.2z M95.9,213.8c-2,0.6-4.2,0.8-6.1,0.8\n\t\tc-2.8,0-5.1-0.4-5.9-0.8c-0.3-0.1-0.7-0.3-1.3-1.1h0.1c0-1.4,1.8-2.5,5.7-3.5c3.7-0.9,15.7-1.6,19.3-1.7c-1.6,1.2-3.2,2.7-4.8,4.4\n\t\tC102.3,212.1,100.1,212.7,95.9,213.8z M119.5,208.2c-6.5,10.6-6.8,18.8-6.9,24.2c0,0.9,0,1.8-0.1,2.5c-0.1,1-0.1,1.9-0.1,2.6\n\t\tc-0.1,3-0.2,3.6-1.9,4.2c-0.3,0.1-0.7,0.1-1.1,0.1c-1.6,0-3.8-0.7-5.8-1.3c-1.5-0.4-2.9-0.9-4-1c-0.4-0.1-0.8-0.1-1.2-0.1\n\t\tc-0.9,0-1.6,0.1-2.3,0.2c-0.6,0.1-1.2,0.2-1.8,0.2c-0.6,0-1.3-0.1-2-0.4c-0.5-0.2-0.9-0.6-1.1-1.1c-0.7-1.8,0.3-5.6,3.3-12.2\n\t\tc3.7-8.2,9.8-15.8,15.6-19.3c3.9-2.4,7.3-2.7,8.9-2.7c0.3,0,0.5,0,0.7,0L119.5,208.2z M119.9,200.6l-0.1,2.5c0,0,0,0,0,0l0,0.3\n\t\tc-0.2,0-0.5,0-0.8,0c-1.8,0-5.2,0.4-9.3,2.8c-0.2,0.1-0.5,0.3-0.7,0.5c-2.1,0.1-16.5,0.8-20.7,1.8c-3.6,0.9-5.5,1.9-6.1,3.3\n\t\tc-0.7-1.5-1.4-4.2-1.7-9.1c-0.7-8.9,1.9-16.8,3.1-18.3c0.5-0.6,1.5-0.8,2.8-0.8c1,0,2.3,0.1,3.7,0.3c0.6,0.1,1.2,0.1,1.8,0.2\n\t\tc3,0.3,10.7,3.5,16.3,5.9c1.8,0.8,3.4,1.4,4.5,1.9c4,1.5,7.2,5.5,7.6,6L119.9,200.6z M133.1,209.9c-1.1,0-1.7-0.2-2.3-0.5\n\t\tc-0.6-0.3-1.3-0.5-2.4-0.5c-1.3,0-2.6,0.3-3.8,0.6c-0.9,0.2-1.7,0.4-2.3,0.4c-0.9,0-1.7-1.1-2-1.7l0.6-11.5\n\t\tc0.1-0.3,0.5-2.5,2.2-2.5c0,0,0.1,0,0.1,0c1,0.1,1.6,0.4,2.2,0.7c0.6,0.3,1.2,0.7,2.3,0.7c1.1,0,1.9-0.4,2.7-0.9\n\t\tc0.7-0.4,1.4-0.7,2.2-0.7c1.2,0,2.4,1.8,2.8,2.6l0.3,11.5C135.6,208.6,134.9,209.9,133.1,209.9z M163.7,231.5\n\t\tc1.8,5.2,1.2,7.1,0.9,7.6c-0.2,0.3-0.4,0.4-0.7,0.5c-0.2,0-0.4,0-0.7,0c-0.4,0-0.9,0-1.4,0c-0.7,0-1.6-0.1-2.5-0.1\n\t\tc-1.6,0-3.4,0.1-5.3,0.5c-1.3,0.3-2.6,0.8-3.8,1.2c-1.7,0.6-3.2,1.2-4.4,1.2c-0.8,0-1.4-0.3-1.8-0.9c-0.9-1.5-0.8-5.3-0.8-9\n\t\tc0-3,0-6.1-0.4-8.1c-1-4.6-3.5-12.5-6.3-15.6c0.1-0.1,0.1-0.2,0.1-0.3l0-0.1l-0.1-4c1.5,0.1,5.9,0.7,9.9,2.8l0.2,0.1\n\t\tc0,0,0.2,0.1,0.3,0.2c1.1,0.6,2.1,1.4,3,2.3C154.6,214.7,161.6,225.7,163.7,231.5z M169.2,214.4c-0.8,0.2-1.7,0.3-2.7,0.3\n\t\tc-5.4,0-12.9-2.7-14.2-3.1c-0.7-0.9-1.4-1.7-2.1-2.3c-0.6-0.6-1.2-1.1-1.9-1.6c4,0.3,12.5,0.9,15.2,1.1c2.6,0.3,8.6,0.9,10,3.9\n\t\tC172.8,213.4,171.6,213.8,169.2,214.4z M175.5,206.6c-0.2,0.9-0.4,1.7-0.6,2.4c-0.3,1.3-0.5,2.2-0.9,2.9c-1.6-2.7-6.1-3.5-10.4-4\n\t\tc-3-0.3-13.9-1-16.7-1.2c-4.2-2.4-9.1-3-10.6-3.1l0-0.6c0,0,0,0,0,0l0-1.6l-0.1-3.7c0.4-0.7,2.5-4,6.9-5.9\n\t\tc10.5-4.5,17.6-7,21.2-7.5c0.5-0.1,1-0.1,1.5-0.2c1.6-0.2,2.9-0.4,4-0.4c2,0,3.3,0.6,4.1,2.8C175.3,190.3,177.1,201,175.5,206.6z\"\n\t\t/>\n</g>\n</svg>\n";
-},{}],"js/class/CardAdd.ts":[function(require,module,exports) {
+},{}],"js/class/AddSVG.ts":[function(require,module,exports) {
 "use strict";
 
 exports.__esModule = true;
 
-var CardAdd =
+var AddSVG =
 /** @class */
 function () {
-  function CardAdd(html) {
-    this.htmlTemplate = "\n  <div class=\"card\">\n    <div class=\"card-body\">\n    </div>\n  </div>\n  ";
+  function AddSVG(html) {
     var element = document.createElement('div');
-    element.classList.add("col-12");
-    element.classList.add("col-sm-6");
-    element.innerHTML = this.htmlTemplate;
-    var elementBody = element.querySelector(".card-body");
-    elementBody.innerHTML = html;
+    element.classList.add("moko-wrapper");
+    element.innerHTML = html;
     this.genarateHTML = element;
   }
 
-  CardAdd.prototype.setHTML = function () {
-    var lists = document.body.querySelector(".list");
-    lists.appendChild(this.genarateHTML);
-  };
-
-  CardAdd.prototype.getElement = function () {
+  AddSVG.prototype.getElement = function () {
     return this.genarateHTML;
   };
 
-  return CardAdd;
+  return AddSVG;
 }();
 
-exports.CardAdd = CardAdd;
-},{}],"js/class/KumaNoHana.ts":[function(require,module,exports) {
+exports.AddSVG = AddSVG;
+},{}],"js/moko.ts":[function(require,module,exports) {
 "use strict";
 
-exports.__esModule = true;
-
-var KumaNoHana =
-/** @class */
-function () {
-  function KumaNoHana() {
-    this.hana = this.getKumaNoHana();
-    this.hanaSetInterval();
-  }
-
-  KumaNoHana.prototype.getKumaNoHana = function () {
-    return document.body.querySelector(".card-body .hana");
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
   };
-
-  KumaNoHana.prototype.hanaSetInterval = function () {
-    var _this = this;
-
-    var lrFlag = true;
-    setInterval(function () {
-      if (lrFlag) {
-        _this.hana.style.transform = "translateX(3%)";
-      } else {
-        _this.hana.style.transform = "translateX(-3%)";
-      }
-
-      lrFlag = !lrFlag;
-    }, 500);
-  };
-
-  return KumaNoHana;
-}();
-
-exports.KumaNoHana = KumaNoHana;
-},{}],"js/class/Kumo.ts":[function(require,module,exports) {
-"use strict";
-
-exports.__esModule = true;
-
-var Kumo =
-/** @class */
-function () {
-  function Kumo() {
-    this.ames = this.getAmes();
-    this.amesSetInterval();
-  }
-
-  Kumo.prototype.getAmes = function () {
-    return document.body.querySelectorAll(".card-body .ame");
-  };
-
-  Kumo.prototype.amesSetInterval = function () {
-    var _this = this;
-
-    setInterval(function () {
-      _this.ames.forEach(function (v) {
-        var per = v.getAttribute("data-translatezY");
-        console.log(per);
-
-        if (!per) {
-          v.setAttribute("data-translatezY", "0");
-          per = 0;
-        }
-
-        v.style.transform = "translateY(" + per + "%)";
-        per += 10;
-
-        if (per > 30) {
-          per = 0;
-        }
-
-        v.setAttribute("data-translatezY", per);
-      });
-    }, 500);
-  };
-
-  return Kumo;
-}();
-
-exports.Kumo = Kumo;
-},{}],"js/index.ts":[function(require,module,exports) {
-"use strict";
+};
 
 exports.__esModule = true;
 
@@ -18174,15 +20737,13 @@ require("bootstrap/dist/css/bootstrap.min.css");
 
 require("bootstrap");
 
-require("../assets/css/common.scss");
+require("../assets/css/moko.scss");
+
+var hammerjs_1 = __importDefault(require("hammerjs"));
 
 var svg_list_1 = require("../assets/svg/svg-list");
 
-var CardAdd_1 = require("./class/CardAdd");
-
-var KumaNoHana_1 = require("./class/KumaNoHana");
-
-var Kumo_1 = require("./class/Kumo");
+var AddSVG_1 = require("./class/AddSVG");
 
 var main =
 /** @class */
@@ -18190,16 +20751,73 @@ function () {
   function main() {
     var _this = this;
 
-    this.svgList = [svg_list_1.kuma, svg_list_1.ame, svg_list_1.usagi];
-    this.svgList.forEach(function (v) {
-      _this.getSvgAndSetCard(v);
+    this.isTouch = false;
+    this.elm = new AddSVG_1.AddSVG(svg_list_1.usagi).getElement();
+    document.body.querySelector("main").appendChild(this.elm);
+    this.addMokoTouchEventLisner();
+    this.moveElms = this.getHamaElm();
+    this.moveElms.forEach(function (v) {
+      _this.setHanaPostion(v);
     });
-    new KumaNoHana_1.KumaNoHana();
-    new Kumo_1.Kumo();
   }
 
-  main.prototype.getSvgAndSetCard = function (html) {
-    new CardAdd_1.CardAdd(html).setHTML();
+  main.prototype.getHamaElm = function () {
+    var _this = this;
+
+    var ids = ["#目", "#歯1", "#歯2", "#ほっぺ_xFF1F_", "#鼻", "#ひげ", "#てん"];
+    var elms = [];
+    ids.forEach(function (v) {
+      elms.push(_this.elm.querySelector(v));
+    });
+    return elms;
+  };
+
+  main.prototype.setHanaPostion = function (v) {
+    v.style.transition = "transform 0.1s linear"; // v.style.position = "fixed";
+    // v.style.top = v.getBoundingClientRect().top + "px";
+    // v.style.left = v.getBoundingClientRect().left + "px";
+  };
+
+  main.prototype.addMokoTouchEventLisner = function () {
+    var _this = this;
+
+    var mc = new hammerjs_1["default"](this.elm);
+    var tmpX, tmpY;
+    mc.on("panstart", function (e) {
+      _this.changeTouchstatus(true);
+
+      _this.touchstartX = e.deltaX;
+      _this.touchstartY = e.deltaY;
+    });
+    mc.on("panmove", function (e) {
+      tmpX = e.deltaX;
+      tmpY = e.deltaY; // this.moveElms.forEach((v)=>{
+      //   v.style.transform = `translateX(${-(this.touchstartX - e.deltaX)/20}%) translateY(${-(this.touchstartY - e.deltaY)/20}%)`
+      // })
+    });
+    mc.on("panend", function (e) {
+      _this.changeTouchstatus(false);
+
+      _this.moveElms.forEach(function (v) {
+        v.style.transform = "translateX(0%) translateY(0%)";
+      });
+    });
+    document.addEventListener('touchmove', function (e) {
+      e.preventDefault();
+    }, {
+      passive: false
+    });
+    setInterval(function () {
+      if (_this.isTouch) {
+        _this.moveElms.forEach(function (v) {
+          v.style.transform = "translateX(" + -(_this.touchstartX - tmpX) / 20 + "%) translateY(" + -(_this.touchstartY - tmpY) / 20 + "%)";
+        });
+      }
+    }, 1000 / 30);
+  };
+
+  main.prototype.changeTouchstatus = function (f) {
+    this.isTouch = f;
   };
 
   return main;
@@ -18209,7 +20827,7 @@ exports.main = main;
 window.addEventListener('DOMContentLoaded', function () {
   new main();
 });
-},{"bootstrap/dist/css/bootstrap.min.css":"../node_modules/bootstrap/dist/css/bootstrap.min.css","bootstrap":"../node_modules/bootstrap/dist/js/bootstrap.js","../assets/css/common.scss":"assets/css/common.scss","../assets/svg/svg-list":"assets/svg/svg-list.ts","./class/CardAdd":"js/class/CardAdd.ts","./class/KumaNoHana":"js/class/KumaNoHana.ts","./class/Kumo":"js/class/Kumo.ts"}],"../node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"bootstrap/dist/css/bootstrap.min.css":"../node_modules/bootstrap/dist/css/bootstrap.min.css","bootstrap":"../node_modules/bootstrap/dist/js/bootstrap.js","../assets/css/moko.scss":"assets/css/moko.scss","hammerjs":"../node_modules/hammerjs/hammer.js","../assets/svg/svg-list":"assets/svg/svg-list.ts","./class/AddSVG":"js/class/AddSVG.ts"}],"../node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -18237,7 +20855,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49709" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49253" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -18412,5 +21030,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../node_modules/parcel/src/builtins/hmr-runtime.js","js/index.ts"], null)
-//# sourceMappingURL=/js.52877fb3.js.map
+},{}]},{},["../node_modules/parcel/src/builtins/hmr-runtime.js","js/moko.ts"], null)
+//# sourceMappingURL=/moko.e6726ebe.js.map

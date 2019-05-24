@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx parcel src/index.html --open",
-    "build": "npx parcel src/index.html -d docs"
+    "moko": "npx parcel src/moko.html --open",
+    "build": "npx parcel src/index.html -d docs",
+    "moko_build": "npx parcel src/moko.html -d docs/moko"
   },
   "keywords": [
     "JavaScript",
@@ -24,6 +26,7 @@
   "dependencies": {
     "bootstrap": "^4.3.1",
     "class": "^0.1.4",
+    "hammerjs": "^2.0.8",
     "jquery": "^3.4.1",
     "popper.js": "^1.15.0"
   }
