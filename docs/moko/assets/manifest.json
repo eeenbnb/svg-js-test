@@ -2,7 +2,7 @@
   "name"              : "もう子",
   "short_name"        : "もう子",
   "description"       : "もう子を持ち運ぼう",
-  "start_url"         : "/moko/moko.html",
+  "start_url"         : "https://eeenbnb.github.io/svg-js-test/moko/moko.html",
   "display"           : "standalone",
   "orientation"       : "any",
   "background_color"  : "#FFF",
