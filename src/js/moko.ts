@@ -14,13 +14,18 @@ export class main{
   isTouch:boolean = false
   touchstartX;
   touchstartY;
+  isHami:boolean = false;
   constructor(){
     this.elm = new AddSVG(usagi).getElement()
-    document.body.querySelector("main").appendChild(this.elm);
+    document.body.querySelector(".svg-area").appendChild(this.elm);
     this.addMokoTouchEventLisner();
     this.moveElms = this.getHamaElm();
     this.moveElms.forEach((v)=>{
       this.setHanaPostion(v);
+    })
+
+    document.body.querySelector("#hami-check").addEventListener("change",(e)=>{
+      this.isHami = (e.srcElement as any).checked;
     })
   }
 
@@ -70,7 +75,21 @@ export class main{
     setInterval(()=>{
       if(this.isTouch){
         this.moveElms.forEach((v)=>{
-          v.style.transform = `translateX(${-(this.touchstartX - tmpX)/20}%) translateY(${-(this.touchstartY - tmpY)/20}%)`
+          let x = -(this.touchstartX - tmpX)/20;
+          let y = -(this.touchstartY - tmpY)/20;
+          if(!this.isHami){
+            if(x > 5.4){
+              x = 5.4
+            }if(x < -5.4){
+              x = -5.4
+            }
+            if(y > 2.4){
+              y = 2.54
+            }if(y < - 10){
+              y = - 10
+            }
+          }
+          v.style.transform = `translateX(${x}%) translateY(${y}%)`
         })
       }
     },1000/30)

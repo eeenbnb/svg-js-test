@@ -20752,12 +20752,16 @@ function () {
     var _this = this;
 
     this.isTouch = false;
+    this.isHami = false;
     this.elm = new AddSVG_1.AddSVG(svg_list_1.usagi).getElement();
-    document.body.querySelector("main").appendChild(this.elm);
+    document.body.querySelector(".svg-area").appendChild(this.elm);
     this.addMokoTouchEventLisner();
     this.moveElms = this.getHamaElm();
     this.moveElms.forEach(function (v) {
       _this.setHanaPostion(v);
+    });
+    document.body.querySelector("#hami-check").addEventListener("change", function (e) {
+      _this.isHami = e.srcElement.checked;
     });
   }
 
@@ -20810,7 +20814,28 @@ function () {
     setInterval(function () {
       if (_this.isTouch) {
         _this.moveElms.forEach(function (v) {
-          v.style.transform = "translateX(" + -(_this.touchstartX - tmpX) / 20 + "%) translateY(" + -(_this.touchstartY - tmpY) / 20 + "%)";
+          var x = -(_this.touchstartX - tmpX) / 20;
+          var y = -(_this.touchstartY - tmpY) / 20;
+
+          if (!_this.isHami) {
+            if (x > 5.4) {
+              x = 5.4;
+            }
+
+            if (x < -5.4) {
+              x = -5.4;
+            }
+
+            if (y > 2.4) {
+              y = 2.54;
+            }
+
+            if (y < -10) {
+              y = -10;
+            }
+          }
+
+          v.style.transform = "translateX(" + x + "%) translateY(" + y + "%)";
         });
       }
     }, 1000 / 30);
@@ -20855,7 +20880,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49253" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57401" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
